@@ -25,5 +25,7 @@ LyricsManager.getLyrics({
 ```
 
 `logLevel` can be one of `none` | `info` | `warn` | `warn` | `error` | `debug`.<br />
-`instrumentalLyricsIndicator` can be any `string`.
-`sources` has to be an array (`Array<"musixmatch" | "lrclib" | "netease">`).<br />
+`instrumentalLyricsIndicator` can be any `string`.<br />
+`sources` has to be an array (`Array<"musixmatch" | "lrclib" | "netease">`).
+
+When no lyrics are avaible, they are `null`.
