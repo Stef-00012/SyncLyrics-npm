@@ -1,8 +1,9 @@
 {
   "name": "@stef-0012/synclyrics",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "Get the synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
   "main": "dist/index.js",
+  "types": "./types/index.d.ts",
   "files": [
     "functions/*",
     "media.js"
@@ -34,8 +35,5 @@
   "homepage": "https://github.com/Stef-00012/SyncLyrics#readme",
   "devDependencies": {
     "@types/node": "^22.7.6"
-  },
-  "dependencies": {
-    "input": "^1.0.1"
   }
 }

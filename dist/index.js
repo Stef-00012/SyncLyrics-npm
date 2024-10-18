@@ -12,6 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SyncLyrics = void 0;
+exports.normalize = normalize;
 const node_path_1 = __importDefault(require("node:path"));
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_util_1 = require("node:util");
@@ -251,7 +253,7 @@ class SyncLyrics {
                 lyrics: null,
             };
             // @ts-ignore
-            const duration = metadata.length / 1000;
+            const duration = Number.parseFloat(metadata.length) / 1000;
             // @ts-ignore
             const searchParams = new URLSearchParams({
                 app_id: "web-desktop-app-v1.0",
@@ -676,6 +678,7 @@ class SyncLyrics {
         console.warn("\x1b[33;1mWARNING:\x1b[0m", ...args);
     }
 }
+exports.SyncLyrics = SyncLyrics;
 function normalize(string) {
     return string
         .replace(/（/g, "(")
@@ -695,7 +698,3 @@ function normalize(string) {
         .replace(/\s+/g, " ")
         .trim();
 }
-module.exports = {
-    SyncLyrics,
-    normalize,
-};

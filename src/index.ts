@@ -43,7 +43,7 @@ interface FormattedLyric {
 	text: string;
 }
 
-class SyncLyrics {
+export class SyncLyrics {
 	logLevel: "none" | "info" | "warn" | "error" | "debug";
 	instrumentalLyricsIndicator: string;
 	sources: Sources;
@@ -396,7 +396,7 @@ class SyncLyrics {
 		};
 
 		// @ts-ignore
-		const duration = metadata.length / 1000;
+		const duration = Number.parseFloat(metadata.length) / 1000;
 
 		// @ts-ignore
 		const searchParams = new URLSearchParams({
@@ -1037,7 +1037,7 @@ class SyncLyrics {
 	}
 }
 
-function normalize(string: string) {
+export function normalize(string: string) {
 	return string
 		.replace(/（/g, "(")
 		.replace(/）/g, ")")
@@ -1056,8 +1056,3 @@ function normalize(string: string) {
 		.replace(/\s+/g, " ")
 		.trim();
 }
-
-module.exports = {
-	SyncLyrics,
-	normalize,
-};

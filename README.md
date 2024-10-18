@@ -20,12 +20,14 @@ const LyricsManager = new SyncLyrics({
 LyricsManager.getLyrics({
     track: "the old me",
     artist: "Henry Moodie",
-    album: "good old days"
+    album: "good old days",
+    length: 175000 // 2m55s in ms
 })
 ```
 
 `logLevel` can be one of `none` | `info` | `warn` | `warn` | `error` | `debug`.<br />
 `instrumentalLyricsIndicator` can be any `string`.<br />
 `sources` has to be an array (`Array<"musixmatch" | "lrclib" | "netease">`).
+`length` haa to be a number.
 
 When no lyrics are avaible, they are `null`.
