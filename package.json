@@ -1,0 +1,41 @@
+{
+  "name": "@stef-0012/synclyrics",
+  "version": "1.0.3",
+  "description": "Get the synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
+  "main": "dist/index.js",
+  "files": [
+    "functions/*",
+    "media.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stef-00012/SyncLyrics-npm.git"
+  },
+  "keywords": [
+    "synced",
+    "lyrics",
+    "lyrics",
+    "synced",
+    "song",
+    "sync",
+    "song",
+    "sync",
+    "lyrics"
+  ],
+  "author": "Stef_DP",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Stef-00012/SyncLyrics/issues"
+  },
+  "homepage": "https://github.com/Stef-00012/SyncLyrics#readme",
+  "devDependencies": {
+    "@types/node": "^22.7.6"
+  },
+  "dependencies": {
+    "input": "^1.0.1"
+  }
+}
