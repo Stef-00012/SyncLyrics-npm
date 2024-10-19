@@ -798,14 +798,17 @@ export class SyncLyrics {
 		if (!this._cache) {
 			this.infoLog("No cached lyrics, fetching the song data");
 
+            this.lyrics = await this._getLyrics(metadata)
+
 			return {
 				trackId: this._trackId,
-				lyrics: await this._getLyrics(metadata),
+				lyrics: this.lyrics,
 				track: metadata.track,
 				artist: metadata.artist,
 				album: metadata.album,
 				source: this._lyricsSource,
 				cached: false,
+				parse: this.parseLyrics
 			};
 		}
 
@@ -815,15 +818,17 @@ export class SyncLyrics {
 			);
 
 			this._cache = null;
+			this.lyrics = await this._getLyrics(metadata)
 
 			return {
 				trackId: this._trackId,
-				lyrics: await this._getLyrics(metadata),
+				lyrics: this.lyrics,
 				track: metadata.track,
 				artist: metadata.artist,
 				album: metadata.album,
 				source: this._lyricsSource,
-				cached: false,
+				cached: false,,
+				parse: this.parseLyrics
 			};
 		}
 

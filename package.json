@@ -1,12 +1,13 @@
 {
   "name": "@stef-0012/synclyrics",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Get the synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
   "main": "dist/index.js",
   "types": "./types/index.d.ts",
   "files": [
     "functions/*",
-    "media.js"
+    "dist/*",
+    "types/*"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
