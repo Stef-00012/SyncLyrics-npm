@@ -1,18 +1,13 @@
 const { SyncLyrics } = require("../dist/index.js");
 
-const LyricsManager = new SyncLyrics({
-    logLevel: "debug"
-});
-
 (async () => {
+	const LyricsManager = new SyncLyrics();
+
 	const data = await LyricsManager.getLyrics({
-		track: "the old me",
-		artist: "Henry Moodie",
-		album: "good old days",
 		length: 175000,
 	});
 
+	console.log(data);
 	console.log(data.lyrics);
-
 	console.log(data.parse());
 })();

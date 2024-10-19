@@ -10,7 +10,10 @@
     "types/*"
   ],
   "scripts": {
-    "test": "node tests/lyrics.js"
+    "tests:valid1": "node tests/valid1.js",
+    "tests:valid2": "node tests/valid2.js",
+    "tests:invalid1": "node tests/invalid1.js",
+    "tests:invalid2": "node tests/invalid2.js"
   },
   "type": "commonjs",
   "repository": {

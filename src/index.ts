@@ -49,7 +49,7 @@ export class SyncLyrics {
 	logLevel: "none" | "info" | "warn" | "error" | "debug";
 	instrumentalLyricsIndicator: string;
 	sources: Sources;
-	lyrics: string| null;
+	lyrics: string | null;
 	saveMusixmatchToken: (tokenData: TokenData) => void | Promise<void>;
 	getMusixmatchToken: () => TokenData | Promise<TokenData>;
 
@@ -64,8 +64,10 @@ export class SyncLyrics {
 		this.logLevel = data?.logLevel || "none";
 		this.instrumentalLyricsIndicator = data?.instrumentalLyricsIndicator || "";
 		this.sources = data?.sources || ["musixmatch", "lrclib", "netease"];
-		this.saveMusixmatchToken = data.saveMusixmatchToken || this._saveMusixmatchToken
-		this.getMusixmatchToken = data.getMusixmatchToken || this._getMusixmatchToken
+		this.saveMusixmatchToken =
+			data?.saveMusixmatchToken || this._saveMusixmatchToken;
+		this.getMusixmatchToken =
+			data?.getMusixmatchToken || this._getMusixmatchToken;
 
 		if (this.sources.length <= 0)
 			throw new Error("SyncLyrics: You must provide atleast one source");
@@ -800,6 +802,11 @@ export class SyncLyrics {
 	}
 
 	public async getLyrics(metadata: Metadata) {
+		if (!metadata?.track && !metadata?.artist && !metadata?.album)
+			throw new Error(
+				"SyncLyrics (getlyrics): At least one of track, artist or album must be present",
+			);
+
 		this._trackId = Buffer.from(
 			`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`,
 		).toString("base64");
@@ -807,7 +814,7 @@ export class SyncLyrics {
 		if (!this._cache) {
 			this.infoLog("No cached lyrics, fetching the song data");
 
-            this.lyrics = await this._getLyrics(metadata)
+			this.lyrics = await this._getLyrics(metadata);
 
 			return {
 				trackId: this._trackId,
@@ -817,7 +824,7 @@ export class SyncLyrics {
 				album: metadata.album,
 				source: this._lyricsSource,
 				cached: false,
-				parse: this.parseLyrics
+				parse: this.parseLyrics,
 			};
 		}
 
@@ -827,7 +834,7 @@ export class SyncLyrics {
 			);
 
 			this._cache = null;
-			this.lyrics = await this._getLyrics(metadata)
+			this.lyrics = await this._getLyrics(metadata);
 
 			return {
 				trackId: this._trackId,
@@ -837,7 +844,7 @@ export class SyncLyrics {
 				album: metadata.album,
 				source: this._lyricsSource,
 				cached: false,
-				parse: this.parseLyrics
+				parse: this.parseLyrics,
 			};
 		}
 
@@ -847,7 +854,7 @@ export class SyncLyrics {
 			return null;
 		}
 
-		this.lyrics = this._cache.lyrics
+		this.lyrics = this._cache.lyrics;
 
 		return {
 			trackId: this._trackId,
@@ -857,7 +864,7 @@ export class SyncLyrics {
 			album: metadata.album,
 			source: this._lyricsSource,
 			cached: false,
-			parse: this.parseLyrics
+			parse: this.parseLyrics,
 		};
 	}
 
@@ -866,46 +873,10 @@ export class SyncLyrics {
 	): Promise<TokenData | null | undefined> {
 		this.infoLog("Getting Musixmatch token...");
 
-		const data = await this.getMusixmatchToken()
+		const tokenData: TokenData | Promise<TokenData> =
+			await this.getMusixmatchToken();
 
-		if (data) return data;
-
-		// const tokenFile = path.join("/", "tmp", "musixmatchToken.json");
-
-		// if (fs.existsSync(tokenFile)) {
-		// 	this.infoLog("Token file found, checking if it is valid...");
-
-		// 	const fileContent = fs.readFileSync(tokenFile);
-
-		// 	try {
-		// 		// @ts-ignore
-		// 		const data = JSON.parse(fileContent);
-
-		// 		this.infoLog(
-		// 			"Token file is valid, checking if the token is not expired and has all the required fields...",
-		// 		);
-
-		// 		if (data.usertoken && data.cookies && data.expiresAt > Date.now()) {
-		// 			this.infoLog("Got token from the token file");
-
-		// 			return data;
-		// 		}
-		// 	} catch (e) {
-		// 		this.errorLog(
-		// 			"Something went wrong while reading the token file, deleting it...",
-		// 			e,
-		// 		);
-
-		// 		try {
-		// 			fs.unlinkSync(tokenFile);
-		// 		} catch (e) {
-		// 			this.errorLog(
-		// 				"Something went wrong while deleting the token file...",
-		// 				e,
-		// 			);
-		// 		}
-		// 	}
-		// }
+		if (tokenData) return tokenData;
 
 		// if (global.fetchingMxmToken) return null;
 

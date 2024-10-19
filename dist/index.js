@@ -30,8 +30,10 @@ class SyncLyrics {
         this.logLevel = (data === null || data === void 0 ? void 0 : data.logLevel) || "none";
         this.instrumentalLyricsIndicator = (data === null || data === void 0 ? void 0 : data.instrumentalLyricsIndicator) || "";
         this.sources = (data === null || data === void 0 ? void 0 : data.sources) || ["musixmatch", "lrclib", "netease"];
-        this.saveMusixmatchToken = data.saveMusixmatchToken || this._saveMusixmatchToken;
-        this.getMusixmatchToken = data.getMusixmatchToken || this._getMusixmatchToken;
+        this.saveMusixmatchToken =
+            (data === null || data === void 0 ? void 0 : data.saveMusixmatchToken) || this._saveMusixmatchToken;
+        this.getMusixmatchToken =
+            (data === null || data === void 0 ? void 0 : data.getMusixmatchToken) || this._getMusixmatchToken;
         if (this.sources.length <= 0)
             throw new Error("SyncLyrics: You must provide atleast one source");
         this.lyrics = null;
@@ -511,6 +513,8 @@ class SyncLyrics {
     }
     getLyrics(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!(metadata === null || metadata === void 0 ? void 0 : metadata.track) && !(metadata === null || metadata === void 0 ? void 0 : metadata.artist) && !(metadata === null || metadata === void 0 ? void 0 : metadata.album))
+                throw new Error("SyncLyrics (getlyrics): At least one of track, artist or album must be present");
             this._trackId = Buffer.from(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`).toString("base64");
             if (!this._cache) {
                 this.infoLog("No cached lyrics, fetching the song data");
@@ -523,7 +527,7 @@ class SyncLyrics {
                     album: metadata.album,
                     source: this._lyricsSource,
                     cached: false,
-                    parse: this.parseLyrics
+                    parse: this.parseLyrics,
                 };
             }
             if (this._trackId !== this._cache.trackId) {
@@ -538,7 +542,7 @@ class SyncLyrics {
                     album: metadata.album,
                     source: this._lyricsSource,
                     cached: false,
-                    parse: this.parseLyrics
+                    parse: this.parseLyrics,
                 };
             }
             if (!this._cache.lyrics) {
@@ -554,7 +558,7 @@ class SyncLyrics {
                 album: metadata.album,
                 source: this._lyricsSource,
                 cached: false,
-                parse: this.parseLyrics
+                parse: this.parseLyrics,
             };
         });
     }
@@ -562,38 +566,9 @@ class SyncLyrics {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f;
             this.infoLog("Getting Musixmatch token...");
-            const data = yield this.getMusixmatchToken();
-            if (data)
-                return data;
-            // const tokenFile = path.join("/", "tmp", "musixmatchToken.json");
-            // if (fs.existsSync(tokenFile)) {
-            // 	this.infoLog("Token file found, checking if it is valid...");
-            // 	const fileContent = fs.readFileSync(tokenFile);
-            // 	try {
-            // 		// @ts-ignore
-            // 		const data = JSON.parse(fileContent);
-            // 		this.infoLog(
-            // 			"Token file is valid, checking if the token is not expired and has all the required fields...",
-            // 		);
-            // 		if (data.usertoken && data.cookies && data.expiresAt > Date.now()) {
-            // 			this.infoLog("Got token from the token file");
-            // 			return data;
-            // 		}
-            // 	} catch (e) {
-            // 		this.errorLog(
-            // 			"Something went wrong while reading the token file, deleting it...",
-            // 			e,
-            // 		);
-            // 		try {
-            // 			fs.unlinkSync(tokenFile);
-            // 		} catch (e) {
-            // 			this.errorLog(
-            // 				"Something went wrong while deleting the token file...",
-            // 				e,
-            // 			);
-            // 		}
-            // 	}
-            // }
+            const tokenData = yield this.getMusixmatchToken();
+            if (tokenData)
+                return tokenData;
             // if (global.fetchingMxmToken) return null;
             this.infoLog("Fetching the token from the API...");
             const url = "https://apic-desktop.musixmatch.com/ws/1.1/token.get?user_language=en&app_id=web-desktop-app-v1.0";
