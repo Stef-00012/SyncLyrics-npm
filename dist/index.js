@@ -32,6 +32,7 @@ class SyncLyrics {
         this.sources = (data === null || data === void 0 ? void 0 : data.sources) || ["musixmatch", "lrclib", "netease"];
         if (this.sources.length <= 0)
             throw new Error("SyncLyrics: You must provide atleast one source");
+        this.lyrics = null;
         this._cache = null;
         this._lyricsSource = null;
         this._fetching = false;
@@ -511,41 +512,47 @@ class SyncLyrics {
             this._trackId = Buffer.from(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`).toString("base64");
             if (!this._cache) {
                 this.infoLog("No cached lyrics, fetching the song data");
+                this.lyrics = yield this._getLyrics(metadata);
                 return {
                     trackId: this._trackId,
-                    lyrics: yield this._getLyrics(metadata),
+                    lyrics: this.lyrics,
                     track: metadata.track,
                     artist: metadata.artist,
                     album: metadata.album,
                     source: this._lyricsSource,
                     cached: false,
+                    parse: this.parseLyrics
                 };
             }
             if (this._trackId !== this._cache.trackId) {
                 this.infoLog("Cached song is different from current song, fetching the song data");
                 this._cache = null;
+                this.lyrics = yield this._getLyrics(metadata);
                 return {
                     trackId: this._trackId,
-                    lyrics: yield this._getLyrics(metadata),
+                    lyrics: this.lyrics,
                     track: metadata.track,
                     artist: metadata.artist,
                     album: metadata.album,
                     source: this._lyricsSource,
                     cached: false,
+                    parse: this.parseLyrics
                 };
             }
             if (!this._cache.lyrics) {
                 this.infoLog("Cached lyrics are null");
                 return null;
             }
+            this.lyrics = this._cache.lyrics;
             return {
                 trackId: this._trackId,
-                lyrics: this._cache.lyrics,
+                lyrics: this.lyrics,
                 track: metadata.track,
                 artist: metadata.artist,
                 album: metadata.album,
                 source: this._lyricsSource,
                 cached: false,
+                parse: this.parseLyrics
             };
         });
     }
@@ -634,8 +641,10 @@ class SyncLyrics {
             return;
         console.info("\x1b[34;1mINFO:\x1b[0m", ...args);
     }
-    parseLyrics(lyrics) {
-        const lyricsSplit = lyrics.split("\n");
+    parseLyrics(lyrics = this.lyrics) {
+        const lyricsSplit = lyrics === null || lyrics === void 0 ? void 0 : lyrics.split("\n");
+        if (!lyricsSplit)
+            return null;
         const formattedLyrics = [];
         let lastTime;
         for (const index in lyricsSplit) {

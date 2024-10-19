@@ -47,6 +47,7 @@ export class SyncLyrics {
 	logLevel: "none" | "info" | "warn" | "error" | "debug";
 	instrumentalLyricsIndicator: string;
 	sources: Sources;
+	lyrics: string| null;
 
 	_cache: LyricsCache | null;
 	_lyricsSource: string | null;
@@ -62,6 +63,8 @@ export class SyncLyrics {
 
 		if (this.sources.length <= 0)
 			throw new Error("SyncLyrics: You must provide atleast one source");
+
+		this.lyrics = null;
 
 		this._cache = null;
 		this._lyricsSource = null;
@@ -827,7 +830,7 @@ export class SyncLyrics {
 				artist: metadata.artist,
 				album: metadata.album,
 				source: this._lyricsSource,
-				cached: false,,
+				cached: false,
 				parse: this.parseLyrics
 			};
 		}
@@ -838,14 +841,17 @@ export class SyncLyrics {
 			return null;
 		}
 
+		this.lyrics = this._cache.lyrics
+
 		return {
 			trackId: this._trackId,
-			lyrics: this._cache.lyrics,
+			lyrics: this.lyrics,
 			track: metadata.track,
 			artist: metadata.artist,
 			album: metadata.album,
 			source: this._lyricsSource,
 			cached: false,
+			parse: this.parseLyrics
 		};
 	}
 
@@ -981,8 +987,10 @@ export class SyncLyrics {
 		console.info("\x1b[34;1mINFO:\x1b[0m", ...args);
 	}
 
-	public parseLyrics(lyrics: string) {
-		const lyricsSplit = lyrics.split("\n");
+	public parseLyrics(lyrics: string | null = this.lyrics) {
+		const lyricsSplit = lyrics?.split("\n");
+
+		if (!lyricsSplit) return null;
 
 		const formattedLyrics: Array<FormattedLyric> = [];
 		let lastTime: string;

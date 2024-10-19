@@ -22,6 +22,7 @@ export declare class SyncLyrics {
     logLevel: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator: string;
     sources: Sources;
+    lyrics: string | null;
     _cache: LyricsCache | null;
     _lyricsSource: string | null;
     _fetching: boolean;
@@ -42,16 +43,17 @@ export declare class SyncLyrics {
     private fetchLyricsNetease;
     getLyrics(metadata: Metadata): Promise<{
         trackId: string;
-        lyrics: any;
+        lyrics: string | null;
         track: string | undefined;
         artist: string | undefined;
         album: string | undefined;
         source: string | null;
         cached: boolean;
+        parse: (lyrics?: string | null) => FormattedLyric[] | null;
     } | null>;
     private getMusixmatchUsertoken;
     private infoLog;
-    parseLyrics(lyrics: string): FormattedLyric[];
+    parseLyrics(lyrics?: string | null): FormattedLyric[] | null;
     private warnLog;
 }
 export declare function normalize(string: string): string;
