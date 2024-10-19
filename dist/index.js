@@ -30,6 +30,8 @@ class SyncLyrics {
         this.logLevel = (data === null || data === void 0 ? void 0 : data.logLevel) || "none";
         this.instrumentalLyricsIndicator = (data === null || data === void 0 ? void 0 : data.instrumentalLyricsIndicator) || "";
         this.sources = (data === null || data === void 0 ? void 0 : data.sources) || ["musixmatch", "lrclib", "netease"];
+        this.saveMusixmatchToken = data.saveMusixmatchToken || this._saveMusixmatchToken;
+        this.getMusixmatchToken = data.getMusixmatchToken || this._getMusixmatchToken;
         if (this.sources.length <= 0)
             throw new Error("SyncLyrics: You must provide atleast one source");
         this.lyrics = null;
@@ -560,29 +562,38 @@ class SyncLyrics {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f;
             this.infoLog("Getting Musixmatch token...");
-            const tokenFile = node_path_1.default.join("/", "tmp", "musixmatchToken.json");
-            if (node_fs_1.default.existsSync(tokenFile)) {
-                this.infoLog("Token file found, checking if it is valid...");
-                const fileContent = node_fs_1.default.readFileSync(tokenFile);
-                try {
-                    // @ts-ignore
-                    const data = JSON.parse(fileContent);
-                    this.infoLog("Token file is valid, checking if the token is not expired and has all the required fields...");
-                    if (data.usertoken && data.cookies && data.expiresAt > Date.now()) {
-                        this.infoLog("Got token from the token file");
-                        return data;
-                    }
-                }
-                catch (e) {
-                    this.errorLog("Something went wrong while reading the token file, deleting it...", e);
-                    try {
-                        node_fs_1.default.unlinkSync(tokenFile);
-                    }
-                    catch (e) {
-                        this.errorLog("Something went wrong while deleting the token file...", e);
-                    }
-                }
-            }
+            const data = yield this.getMusixmatchToken();
+            if (data)
+                return data;
+            // const tokenFile = path.join("/", "tmp", "musixmatchToken.json");
+            // if (fs.existsSync(tokenFile)) {
+            // 	this.infoLog("Token file found, checking if it is valid...");
+            // 	const fileContent = fs.readFileSync(tokenFile);
+            // 	try {
+            // 		// @ts-ignore
+            // 		const data = JSON.parse(fileContent);
+            // 		this.infoLog(
+            // 			"Token file is valid, checking if the token is not expired and has all the required fields...",
+            // 		);
+            // 		if (data.usertoken && data.cookies && data.expiresAt > Date.now()) {
+            // 			this.infoLog("Got token from the token file");
+            // 			return data;
+            // 		}
+            // 	} catch (e) {
+            // 		this.errorLog(
+            // 			"Something went wrong while reading the token file, deleting it...",
+            // 			e,
+            // 		);
+            // 		try {
+            // 			fs.unlinkSync(tokenFile);
+            // 		} catch (e) {
+            // 			this.errorLog(
+            // 				"Something went wrong while deleting the token file...",
+            // 				e,
+            // 			);
+            // 		}
+            // 	}
+            // }
             // if (global.fetchingMxmToken) return null;
             this.infoLog("Fetching the token from the API...");
             const url = "https://apic-desktop.musixmatch.com/ws/1.1/token.get?user_language=en&app_id=web-desktop-app-v1.0";
@@ -628,7 +639,7 @@ class SyncLyrics {
                     usertoken,
                     expiresAt: new Date(Date.now() + 10 * 60 * 1000).getTime(), // 10 minutes
                 };
-                node_fs_1.default.writeFileSync(tokenFile, JSON.stringify(json, null, 4));
+                yield this.saveMusixmatchToken(json);
                 // global.fetchingMxmToken = false;
                 this.infoLog("Successfully fetched the usertoken");
                 return json;
@@ -685,6 +696,36 @@ class SyncLyrics {
         if ((logLevels[this.logLevel] || 0) < logLevels.warn)
             return;
         console.warn("\x1b[33;1mWARNING:\x1b[0m", ...args);
+    }
+    _getMusixmatchToken() {
+        const tokenFile = node_path_1.default.join("/", "tmp", "musixmatchToken.json");
+        if (node_fs_1.default.existsSync(tokenFile)) {
+            this.infoLog("Token file found, checking if it is valid...");
+            const fileContent = node_fs_1.default.readFileSync(tokenFile);
+            try {
+                // @ts-ignore
+                const data = JSON.parse(fileContent);
+                this.infoLog("Token file is valid, checking if the token is not expired and has all the required fields...");
+                if (data.usertoken && data.cookies && data.expiresAt > Date.now()) {
+                    this.infoLog("Got token from the token file");
+                    return data;
+                }
+            }
+            catch (e) {
+                this.errorLog("Something went wrong while reading the token file, deleting it...", e);
+                try {
+                    node_fs_1.default.unlinkSync(tokenFile);
+                }
+                catch (e) {
+                    this.errorLog("Something went wrong while deleting the token file...", e);
+                }
+            }
+            return null;
+        }
+    }
+    _saveMusixmatchToken(tokenData) {
+        const tokenFile = node_path_1.default.join("/", "tmp", "musixmatchToken.json");
+        node_fs_1.default.writeFileSync(tokenFile, JSON.stringify(tokenData, null, 4));
     }
 }
 exports.SyncLyrics = SyncLyrics;

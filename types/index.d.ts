@@ -3,6 +3,13 @@ interface Data {
     logLevel?: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
+    saveMusixmatchToken: () => void;
+    getMusixmatchToken: () => TokenData;
+}
+interface TokenData {
+    usertoken: string;
+    cookies: string | undefined;
+    expiresAt: number;
 }
 interface Metadata {
     track?: string;
@@ -23,6 +30,8 @@ export declare class SyncLyrics {
     instrumentalLyricsIndicator: string;
     sources: Sources;
     lyrics: string | null;
+    saveMusixmatchToken: (tokenData: TokenData) => void | Promise<void>;
+    getMusixmatchToken: () => TokenData | Promise<TokenData>;
     _cache: LyricsCache | null;
     _lyricsSource: string | null;
     _fetching: boolean;
@@ -55,6 +64,8 @@ export declare class SyncLyrics {
     private infoLog;
     parseLyrics(lyrics?: string | null): FormattedLyric[] | null;
     private warnLog;
+    private _getMusixmatchToken;
+    private _saveMusixmatchToken;
 }
 export declare function normalize(string: string): string;
 export {};
