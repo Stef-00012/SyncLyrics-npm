@@ -1,27 +1,27 @@
-type Sources = Array<"musixmatch" | "lrclib" | "netease">;
-interface Data {
+export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
+export interface Data {
     logLevel?: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
     saveMusixmatchToken: () => void;
     getMusixmatchToken: () => TokenData;
 }
-interface TokenData {
+export interface TokenData {
     usertoken: string;
     cookies: string | undefined;
     expiresAt: number;
 }
-interface Metadata {
+export interface Metadata {
     track?: string;
     artist?: string;
     album?: string;
     length?: number;
 }
-interface LyricsCache {
+export interface LyricsCache {
     lyrics: string | null;
     trackId: string | null;
 }
-interface FormattedLyric {
+export interface FormattedLyric {
     time: number;
     text: string;
 }
@@ -68,4 +68,3 @@ export declare class SyncLyrics {
     private _saveMusixmatchToken;
 }
 export declare function normalize(string: string): string;
-export {};
