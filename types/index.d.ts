@@ -3,8 +3,8 @@ export interface Data {
     logLevel?: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
-    saveMusixmatchToken: () => void;
-    getMusixmatchToken: () => TokenData;
+    saveMusixmatchToken?: () => void;
+    getMusixmatchToken?: () => TokenData;
 }
 export interface TokenData {
     usertoken: string;
@@ -31,7 +31,7 @@ export declare class SyncLyrics {
     sources: Sources;
     lyrics: string | null;
     saveMusixmatchToken: (tokenData: TokenData) => void | Promise<void>;
-    getMusixmatchToken: () => TokenData | Promise<TokenData>;
+    getMusixmatchToken: () => TokenData | Promise<TokenData | null | undefined> | null | undefined;
     _cache: LyricsCache | null;
     _lyricsSource: string | null;
     _fetching: boolean;
