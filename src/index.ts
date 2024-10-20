@@ -60,7 +60,7 @@ export class SyncLyrics {
 	_fetchingSource: string | null;
 	_trackId: string | null;
 
-	constructor(data: Data) {
+	constructor(data?: Data) {
 		this.logLevel = data?.logLevel || "none";
 		this.instrumentalLyricsIndicator = data?.instrumentalLyricsIndicator || "";
 		this.sources = data?.sources || ["musixmatch", "lrclib", "netease"];

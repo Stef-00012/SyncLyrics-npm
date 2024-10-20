@@ -38,7 +38,7 @@ export declare class SyncLyrics {
     _fetchingTrackId: string | null;
     _fetchingSource: string | null;
     _trackId: string | null;
-    constructor(data: Data);
+    constructor(data?: Data);
     private _fetchLyricsMusixmatch;
     private _fetchLyricsNetease;
     private _getLyrics;
