@@ -30,8 +30,8 @@ export declare class SyncLyrics {
     instrumentalLyricsIndicator: string;
     sources: Sources;
     lyrics: string | null;
-    saveMusixmatchToken: (tokenData: TokenData) => void | Promise<void>;
-    getMusixmatchToken: () => TokenData | Promise<TokenData | null | undefined> | null | undefined;
+    saveMusixmatchToken: null | undefined | ((tokenData: TokenData) => void | Promise<void>);
+    getMusixmatchToken: null | undefined | (() => TokenData | Promise<TokenData | null | undefined> | null | undefined);
     _cache: LyricsCache | null;
     _lyricsSource: string | null;
     _fetching: boolean;
@@ -64,7 +64,5 @@ export declare class SyncLyrics {
     private infoLog;
     parseLyrics(lyrics?: string | null): FormattedLyric[] | null;
     private warnLog;
-    private _getMusixmatchToken;
-    private _saveMusixmatchToken;
 }
 export declare function normalize(string: string): string;

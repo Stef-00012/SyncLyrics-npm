@@ -8,14 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SyncLyrics = void 0;
 exports.normalize = normalize;
-const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
+// import path from "path";
+// import fs from "fs";
 const util_1 = require("util");
 const sleep = (0, util_1.promisify)(setTimeout);
 const logLevels = {
@@ -30,10 +27,8 @@ class SyncLyrics {
         this.logLevel = (data === null || data === void 0 ? void 0 : data.logLevel) || "none";
         this.instrumentalLyricsIndicator = (data === null || data === void 0 ? void 0 : data.instrumentalLyricsIndicator) || "";
         this.sources = (data === null || data === void 0 ? void 0 : data.sources) || ["musixmatch", "lrclib", "netease"];
-        this.saveMusixmatchToken =
-            (data === null || data === void 0 ? void 0 : data.saveMusixmatchToken) || this._saveMusixmatchToken;
-        this.getMusixmatchToken =
-            (data === null || data === void 0 ? void 0 : data.getMusixmatchToken) || this._getMusixmatchToken;
+        this.saveMusixmatchToken = data === null || data === void 0 ? void 0 : data.saveMusixmatchToken;
+        this.getMusixmatchToken = data === null || data === void 0 ? void 0 : data.getMusixmatchToken;
         if (this.sources.length <= 0)
             throw new Error("SyncLyrics: You must provide atleast one source");
         this.lyrics = null;
@@ -192,6 +187,10 @@ class SyncLyrics {
                 sources = ["musixmatch", "lrclib", "netease"];
             for (const source of sources) {
                 this.infoLog(`Trying to fetch the lyrics from the source "${source}"`);
+                if (source === 'musixmatch' && (!this.saveMusixmatchToken || !this.getMusixmatchToken)) {
+                    this.infoLog("Musixmatch token functions are not avaible, skipping...");
+                    continue;
+                }
                 if (!Object.keys(avaibleSources).includes(source)) {
                     this.infoLog(`The source "${source}" doesn't exist, skipping...`);
                     continue;
@@ -566,6 +565,10 @@ class SyncLyrics {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f;
             this.infoLog("Getting Musixmatch token...");
+            if (!this.saveMusixmatchToken || !this.getMusixmatchToken) {
+                this.infoLog("Musixmatch token functions are not avaible, skipping...");
+                return null;
+            }
             const tokenData = yield this.getMusixmatchToken();
             if (tokenData)
                 return tokenData;
@@ -671,36 +674,6 @@ class SyncLyrics {
         if ((logLevels[this.logLevel] || 0) < logLevels.warn)
             return;
         console.warn("\x1b[33;1mWARNING:\x1b[0m", ...args);
-    }
-    _getMusixmatchToken() {
-        const tokenFile = path_1.default.join("/", "tmp", "musixmatchToken.json");
-        if (fs_1.default.existsSync(tokenFile)) {
-            this.infoLog("Token file found, checking if it is valid...");
-            const fileContent = fs_1.default.readFileSync(tokenFile);
-            try {
-                // @ts-ignore
-                const data = JSON.parse(fileContent);
-                this.infoLog("Token file is valid, checking if the token is not expired and has all the required fields...");
-                if (data.usertoken && data.cookies && data.expiresAt > Date.now()) {
-                    this.infoLog("Got token from the token file");
-                    return data;
-                }
-            }
-            catch (e) {
-                this.errorLog("Something went wrong while reading the token file, deleting it...", e);
-                try {
-                    fs_1.default.unlinkSync(tokenFile);
-                }
-                catch (e) {
-                    this.errorLog("Something went wrong while deleting the token file...", e);
-                }
-            }
-            return null;
-        }
-    }
-    _saveMusixmatchToken(tokenData) {
-        const tokenFile = path_1.default.join("/", "tmp", "musixmatchToken.json");
-        fs_1.default.writeFileSync(tokenFile, JSON.stringify(tokenData, null, 4));
     }
 }
 exports.SyncLyrics = SyncLyrics;
