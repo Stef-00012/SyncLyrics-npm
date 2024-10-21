@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SyncLyrics = void 0;
 exports.normalize = normalize;
-const node_path_1 = __importDefault(require("node:path"));
-const node_fs_1 = __importDefault(require("node:fs"));
-const node_util_1 = require("node:util");
-const sleep = (0, node_util_1.promisify)(setTimeout);
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const util_1 = require("util");
+const sleep = (0, util_1.promisify)(setTimeout);
 const logLevels = {
     debug: 4,
     error: 3,
@@ -673,10 +673,10 @@ class SyncLyrics {
         console.warn("\x1b[33;1mWARNING:\x1b[0m", ...args);
     }
     _getMusixmatchToken() {
-        const tokenFile = node_path_1.default.join("/", "tmp", "musixmatchToken.json");
-        if (node_fs_1.default.existsSync(tokenFile)) {
+        const tokenFile = path_1.default.join("/", "tmp", "musixmatchToken.json");
+        if (fs_1.default.existsSync(tokenFile)) {
             this.infoLog("Token file found, checking if it is valid...");
-            const fileContent = node_fs_1.default.readFileSync(tokenFile);
+            const fileContent = fs_1.default.readFileSync(tokenFile);
             try {
                 // @ts-ignore
                 const data = JSON.parse(fileContent);
@@ -689,7 +689,7 @@ class SyncLyrics {
             catch (e) {
                 this.errorLog("Something went wrong while reading the token file, deleting it...", e);
                 try {
-                    node_fs_1.default.unlinkSync(tokenFile);
+                    fs_1.default.unlinkSync(tokenFile);
                 }
                 catch (e) {
                     this.errorLog("Something went wrong while deleting the token file...", e);
@@ -699,8 +699,8 @@ class SyncLyrics {
         }
     }
     _saveMusixmatchToken(tokenData) {
-        const tokenFile = node_path_1.default.join("/", "tmp", "musixmatchToken.json");
-        node_fs_1.default.writeFileSync(tokenFile, JSON.stringify(tokenData, null, 4));
+        const tokenFile = path_1.default.join("/", "tmp", "musixmatchToken.json");
+        fs_1.default.writeFileSync(tokenFile, JSON.stringify(tokenData, null, 4));
     }
 }
 exports.SyncLyrics = SyncLyrics;

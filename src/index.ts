@@ -1,6 +1,6 @@
-import path from "node:path";
-import fs from "node:fs";
-import { promisify } from "node:util";
+import path from "path";
+import fs from "fs";
+import { promisify } from "util";
 
 const sleep = promisify(setTimeout);
 
