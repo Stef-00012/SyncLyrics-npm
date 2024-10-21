@@ -514,7 +514,7 @@ class SyncLyrics {
         return __awaiter(this, void 0, void 0, function* () {
             if (!(metadata === null || metadata === void 0 ? void 0 : metadata.track) && !(metadata === null || metadata === void 0 ? void 0 : metadata.artist) && !(metadata === null || metadata === void 0 ? void 0 : metadata.album))
                 throw new Error("SyncLyrics (getlyrics): At least one of track, artist or album must be present");
-            this._trackId = Buffer.from(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`).toString("base64");
+            this._trackId = btoa(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`);
             if (!this._cache) {
                 this.infoLog("No cached lyrics, fetching the song data");
                 this.lyrics = yield this._getLyrics(metadata);

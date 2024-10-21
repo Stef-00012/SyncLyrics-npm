@@ -811,9 +811,9 @@ export class SyncLyrics {
 				"SyncLyrics (getlyrics): At least one of track, artist or album must be present",
 			);
 
-		this._trackId = Buffer.from(
+		this._trackId = btoa(
 			`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`,
-		).toString("base64");
+		);
 
 		if (!this._cache) {
 			this.infoLog("No cached lyrics, fetching the song data");
