@@ -4,7 +4,7 @@ export interface Data {
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
     saveMusixmatchToken?: (tokenData: TokenData) => void;
-    getMusixmatchToken?: () => TokenData;
+    getMusixmatchToken?: () => TokenData | null | undefined;
 }
 export interface TokenData {
     usertoken: string;

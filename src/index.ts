@@ -19,7 +19,7 @@ export interface Data {
 	instrumentalLyricsIndicator?: string;
 	sources?: Sources;
 	saveMusixmatchToken?: (tokenData: TokenData) => void;
-	getMusixmatchToken?: () => TokenData;
+	getMusixmatchToken?: () => TokenData | null | undefined;
 }
 
 export interface TokenData {
@@ -825,7 +825,11 @@ export class SyncLyrics {
 			);
 
 		this._trackId = btoa(
-			`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`,
+			unescape(
+				encodeURIComponent(
+					`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`,
+				),
+			),
 		);
 
 		if (!this._cache) {
