@@ -187,7 +187,8 @@ class SyncLyrics {
                 sources = ["musixmatch", "lrclib", "netease"];
             for (const source of sources) {
                 this.infoLog(`Trying to fetch the lyrics from the source "${source}"`);
-                if (source === 'musixmatch' && (!this.saveMusixmatchToken || !this.getMusixmatchToken)) {
+                if (source === "musixmatch" &&
+                    (!this.saveMusixmatchToken || !this.getMusixmatchToken)) {
                     this.infoLog("Musixmatch token functions are not avaible, skipping...");
                     continue;
                 }

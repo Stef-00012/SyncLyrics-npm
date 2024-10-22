@@ -3,7 +3,7 @@ export interface Data {
     logLevel?: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
-    saveMusixmatchToken?: () => void;
+    saveMusixmatchToken?: (tokenData: TokenData) => void;
     getMusixmatchToken?: () => TokenData;
 }
 export interface TokenData {
