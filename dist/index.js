@@ -11,8 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SyncLyrics = void 0;
 exports.normalize = normalize;
-// import path from "path";
-// import fs from "fs";
 const util_1 = require("util");
 const sleep = (0, util_1.promisify)(setTimeout);
 const logLevels = {
@@ -27,6 +25,7 @@ class SyncLyrics {
         this.logLevel = (data === null || data === void 0 ? void 0 : data.logLevel) || "none";
         this.instrumentalLyricsIndicator = (data === null || data === void 0 ? void 0 : data.instrumentalLyricsIndicator) || "";
         this.sources = (data === null || data === void 0 ? void 0 : data.sources) || ["musixmatch", "lrclib", "netease"];
+        this.cache = (data === null || data === void 0 ? void 0 : data.cache) || new Map();
         this.saveMusixmatchToken = data === null || data === void 0 ? void 0 : data.saveMusixmatchToken;
         this.getMusixmatchToken = data === null || data === void 0 ? void 0 : data.getMusixmatchToken;
         if (this.sources.length <= 0)
@@ -37,33 +36,30 @@ class SyncLyrics {
         this._fetching = false;
         this._fetchingTrackId = null;
         this._fetchingSource = null;
-        this._trackId = null;
-        this._fetchLyricsMusixmatch = this._fetchLyricsMusixmatch.bind(this);
-        this._fetchLyricsNetease = this._fetchLyricsNetease.bind(this);
-        this._getLyrics = this._getLyrics.bind(this);
-        this._parseNeteaseLyrics = this._parseNeteaseLyrics.bind(this);
+        this._trackId = (data === null || data === void 0 ? void 0 : data.trackId) || null;
         this._searchLyricsMusixmatch = this._searchLyricsMusixmatch.bind(this);
+        this.getMusixmatchUsertoken = this.getMusixmatchUsertoken.bind(this);
+        this._fetchLyricsMusixmatch = this._fetchLyricsMusixmatch.bind(this);
+        this.fetchLyricsMusixmatch = this.fetchLyricsMusixmatch.bind(this);
         this._searchLyricsNetease = this._searchLyricsNetease.bind(this);
+        this._fetchLyricsNetease = this._fetchLyricsNetease.bind(this);
+        this._parseNeteaseLyrics = this._parseNeteaseLyrics.bind(this);
+        this.fetchLyricsNetease = this.fetchLyricsNetease.bind(this);
+        this.fetchLyricsLrclib = this.fetchLyricsLrclib.bind(this);
+        this.parseLyrics = this.parseLyrics.bind(this);
+        this._getLyrics = this._getLyrics.bind(this);
+        this.getTrackId = this.getTrackId.bind(this);
+        this.getLyrics = this.getLyrics.bind(this);
         this.debugLog = this.debugLog.bind(this);
         this.errorLog = this.errorLog.bind(this);
-        this.fetchLyricsLrclib = this.fetchLyricsLrclib.bind(this);
-        this.fetchLyricsMusixmatch = this.fetchLyricsMusixmatch.bind(this);
-        this.fetchLyricsNetease = this.fetchLyricsNetease.bind(this);
-        this.getLyrics = this.getLyrics.bind(this);
-        this.getMusixmatchUsertoken = this.getMusixmatchUsertoken.bind(this);
         this.infoLog = this.infoLog.bind(this);
-        this.parseLyrics = this.parseLyrics.bind(this);
         this.warnLog = this.warnLog.bind(this);
     }
     _fetchLyricsMusixmatch(metadata, commonTrackId, tokenData) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+            var _a, _b, _c, _d, _e, _f, _g, _h;
             if (!metadata || !commonTrackId || !tokenData)
                 return null;
-            const cacheData = {
-                trackId: this._trackId,
-                lyrics: null,
-            };
             const searchParams = new URLSearchParams({
                 app_id: "web-desktop-app-v1.0",
                 usertoken: tokenData.usertoken,
@@ -80,39 +76,33 @@ class SyncLyrics {
                 });
                 if (!res.ok) {
                     this.warnLog(`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Musixmatch - Lyrics]`);
-                    if ((!this._cache || !((_a = this._cache) === null || _a === void 0 ? void 0 : _a.lyrics)) &&
-                        ((_b = this._cache) === null || _b === void 0 ? void 0 : _b.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 const data = yield res.json();
-                if (((_d = (_c = data === null || data === void 0 ? void 0 : data.message) === null || _c === void 0 ? void 0 : _c.header) === null || _d === void 0 ? void 0 : _d.status_code) === 401 &&
-                    ((_f = (_e = data === null || data === void 0 ? void 0 : data.message) === null || _e === void 0 ? void 0 : _e.header) === null || _f === void 0 ? void 0 : _f.hint) === "captcha") {
+                if (((_b = (_a = data === null || data === void 0 ? void 0 : data.message) === null || _a === void 0 ? void 0 : _a.header) === null || _b === void 0 ? void 0 : _b.status_code) === 401 &&
+                    ((_d = (_c = data === null || data === void 0 ? void 0 : data.message) === null || _c === void 0 ? void 0 : _c.header) === null || _d === void 0 ? void 0 : _d.hint) === "captcha") {
                     this.warnLog("The usertoken has been temporary blocked for too many requests (captcha)... [Musixmatch - Lyrics]");
-                    if ((!this._cache || !((_g = this._cache) === null || _g === void 0 ? void 0 : _g.lyrics)) &&
-                        ((_h = this._cache) === null || _h === void 0 ? void 0 : _h.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
-                this.debugLog("Musixmatch track data:", (_j = data === null || data === void 0 ? void 0 : data.message) === null || _j === void 0 ? void 0 : _j.body);
-                const lyrics = (_m = (_l = (_k = data === null || data === void 0 ? void 0 : data.message) === null || _k === void 0 ? void 0 : _k.body) === null || _l === void 0 ? void 0 : _l.subtitle) === null || _m === void 0 ? void 0 : _m.subtitle_body;
+                this.debugLog("Musixmatch track data:", (_e = data === null || data === void 0 ? void 0 : data.message) === null || _e === void 0 ? void 0 : _e.body);
+                const lyrics = (_h = (_g = (_f = data === null || data === void 0 ? void 0 : data.message) === null || _f === void 0 ? void 0 : _f.body) === null || _g === void 0 ? void 0 : _g.subtitle) === null || _h === void 0 ? void 0 : _h.subtitle_body;
                 if (!lyrics) {
                     this.infoLog("Missing Lyrics [Musixmatch - Lyrics]");
-                    if ((!this._cache || !((_o = this._cache) === null || _o === void 0 ? void 0 : _o.lyrics)) &&
-                        ((_p = this._cache) === null || _p === void 0 ? void 0 : _p.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 this.infoLog("Successfully fetched and cached the synced lyrics [Musixmatch]");
-                cacheData.lyrics = lyrics;
                 this._lyricsSource = "Musixmatch";
-                this._cache = cacheData;
+                this.cache.set(this._trackId, lyrics);
                 return lyrics;
             }
             catch (e) {
-                if ((!this._cache || !((_q = this._cache) === null || _q === void 0 ? void 0 : _q.lyrics)) &&
-                    ((_r = this._cache) === null || _r === void 0 ? void 0 : _r.trackId) !== this._trackId)
-                    this._cache = cacheData;
+                this.cache.set(this._trackId, null);
                 this.errorLog("Something went wrong while fetching the lyrics [Musixmatch - Lyrics]", e);
                 return null;
             }
@@ -120,13 +110,9 @@ class SyncLyrics {
     }
     _fetchLyricsNetease(metadata, trackId) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g;
+            var _a;
             if (!metadata || !trackId)
                 return null;
-            const cacheData = {
-                trackId: this._trackId,
-                lyrics: null,
-            };
             const searchParams = new URLSearchParams({
                 id: trackId,
             });
@@ -140,32 +126,28 @@ class SyncLyrics {
                 });
                 if (!res.ok) {
                     this.warnLog(`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Netease - Lyrics]`);
-                    if ((!this._cache || !((_a = this._cache) === null || _a === void 0 ? void 0 : _a.lyrics)) &&
-                        ((_b = this._cache) === null || _b === void 0 ? void 0 : _b.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 const data = yield res.json();
                 this.debugLog("Netease track data:", data);
-                let lyrics = (_c = data === null || data === void 0 ? void 0 : data.lrc) === null || _c === void 0 ? void 0 : _c.lyric;
+                let lyrics = (_a = data === null || data === void 0 ? void 0 : data.lrc) === null || _a === void 0 ? void 0 : _a.lyric;
                 if (!lyrics) {
                     this.infoLog("Missing Lyrics [Netease - Lyrics]");
-                    if ((!this._cache || !((_d = this._cache) === null || _d === void 0 ? void 0 : _d.lyrics)) &&
-                        ((_e = this._cache) === null || _e === void 0 ? void 0 : _e.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 lyrics = this._parseNeteaseLyrics(lyrics);
                 this.infoLog("Successfully fetched and cached the synced lyrics [Netease]");
-                cacheData.lyrics = lyrics;
                 this._lyricsSource = "Netease";
-                this._cache = cacheData;
+                this.cache.set(this._trackId, lyrics);
                 return lyrics;
             }
             catch (e) {
-                if ((!this._cache || !((_f = this._cache) === null || _f === void 0 ? void 0 : _f.lyrics)) &&
-                    ((_g = this._cache) === null || _g === void 0 ? void 0 : _g.trackId) !== this._trackId)
-                    this._cache = cacheData;
+                if (!this.cache.has(this._trackId))
+                    this.cache.set(this._trackId, null);
                 this.errorLog("Something went wrong while fetching the lyrics [Netease - Lyrics]", e);
                 return null;
             }
@@ -250,13 +232,9 @@ class SyncLyrics {
     }
     _searchLyricsMusixmatch(metadata, tokenData) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
             if (!metadata || !tokenData)
                 return null;
-            const cacheData = {
-                trackId: this._trackId,
-                lyrics: null,
-            };
             // @ts-ignore
             const duration = Number.parseFloat(metadata.length) / 1000;
             // @ts-ignore
@@ -283,29 +261,26 @@ class SyncLyrics {
                 });
                 if (!res.ok) {
                     this.warnLog(`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Musixmatch - Search]`);
-                    if ((!this._cache || !((_a = this._cache) === null || _a === void 0 ? void 0 : _a.lyrics)) &&
-                        ((_b = this._cache) === null || _b === void 0 ? void 0 : _b.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 const data = yield res.json();
-                if (((_d = (_c = data === null || data === void 0 ? void 0 : data.message) === null || _c === void 0 ? void 0 : _c.header) === null || _d === void 0 ? void 0 : _d.status_code) === 401 &&
-                    ((_f = (_e = data === null || data === void 0 ? void 0 : data.message) === null || _e === void 0 ? void 0 : _e.header) === null || _f === void 0 ? void 0 : _f.hint) === "captcha") {
+                if (((_b = (_a = data === null || data === void 0 ? void 0 : data.message) === null || _a === void 0 ? void 0 : _a.header) === null || _b === void 0 ? void 0 : _b.status_code) === 401 &&
+                    ((_d = (_c = data === null || data === void 0 ? void 0 : data.message) === null || _c === void 0 ? void 0 : _c.header) === null || _d === void 0 ? void 0 : _d.hint) === "captcha") {
                     this.warnLog("The usertoken has been temporary blocked for too many requests (captcha) [Musixmatch - Search]");
-                    if ((!this._cache || !((_g = this._cache) === null || _g === void 0 ? void 0 : _g.lyrics)) &&
-                        ((_h = this._cache) === null || _h === void 0 ? void 0 : _h.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
-                this.debugLog("Musixmatch search results:", (_k = (_j = data === null || data === void 0 ? void 0 : data.message) === null || _j === void 0 ? void 0 : _j.body) === null || _k === void 0 ? void 0 : _k.track_list);
-                if (((_o = (_m = (_l = data === null || data === void 0 ? void 0 : data.message) === null || _l === void 0 ? void 0 : _l.body) === null || _m === void 0 ? void 0 : _m.track_list) === null || _o === void 0 ? void 0 : _o.length) <= 0) {
-                    if ((!this._cache || !((_p = this._cache) === null || _p === void 0 ? void 0 : _p.lyrics)) &&
-                        ((_q = this._cache) === null || _q === void 0 ? void 0 : _q.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                this.debugLog("Musixmatch search results:", (_f = (_e = data === null || data === void 0 ? void 0 : data.message) === null || _e === void 0 ? void 0 : _e.body) === null || _f === void 0 ? void 0 : _f.track_list);
+                if (((_j = (_h = (_g = data === null || data === void 0 ? void 0 : data.message) === null || _g === void 0 ? void 0 : _g.body) === null || _h === void 0 ? void 0 : _h.track_list) === null || _j === void 0 ? void 0 : _j.length) <= 0) {
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     this.infoLog("No songs were found [Musixmatch - Search]");
                     return null;
                 }
-                const track = (_t = (_s = (_r = data === null || data === void 0 ? void 0 : data.message) === null || _r === void 0 ? void 0 : _r.body) === null || _s === void 0 ? void 0 : _s.track_list) === null || _t === void 0 ? void 0 : _t.find((listItem) => {
+                const track = (_m = (_l = (_k = data === null || data === void 0 ? void 0 : data.message) === null || _k === void 0 ? void 0 : _k.body) === null || _l === void 0 ? void 0 : _l.track_list) === null || _m === void 0 ? void 0 : _m.find((listItem) => {
                     var _a, _b, _c, _d;
                     return ((_a = listItem.track.track_name) === null || _a === void 0 ? void 0 : _a.toLowerCase()) ===
                         ((_b = metadata.track) === null || _b === void 0 ? void 0 : _b.toLowerCase()) &&
@@ -313,20 +288,18 @@ class SyncLyrics {
                 });
                 this.debugLog("Musixmatch search filtered track:", track);
                 if (!track) {
-                    if ((!this._cache || !((_u = this._cache) === null || _u === void 0 ? void 0 : _u.lyrics)) &&
-                        ((_v = this._cache) === null || _v === void 0 ? void 0 : _v.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     this.infoLog("No songs were found with the current name and artist [Musixmatch - Search]");
                     return null;
                 }
-                const commonTrackId = (_w = track === null || track === void 0 ? void 0 : track.track) === null || _w === void 0 ? void 0 : _w.commontrack_id;
+                const commonTrackId = (_o = track === null || track === void 0 ? void 0 : track.track) === null || _o === void 0 ? void 0 : _o.commontrack_id;
                 this.debugLog("Musixmatch commontrack_id", commonTrackId);
                 return commonTrackId;
             }
             catch (e) {
-                if ((!this._cache || !((_x = this._cache) === null || _x === void 0 ? void 0 : _x.lyrics)) &&
-                    ((_y = this._cache) === null || _y === void 0 ? void 0 : _y.trackId) !== this._trackId)
-                    this._cache = cacheData;
+                if (!this.cache.has(this._trackId))
+                    this.cache.set(this._trackId, null);
                 this.errorLog("Something went wrong while fetching the lyrics [Musixmatch - Search]", e);
                 return null;
             }
@@ -334,17 +307,13 @@ class SyncLyrics {
     }
     _searchLyricsNetease(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+            var _a, _b, _c, _d, _e;
             // @ts-ignore
             const searchParams = new URLSearchParams({
                 limit: 10,
                 type: 1,
                 keywords: `${metadata.track} ${metadata.artist}`,
             });
-            const cacheData = {
-                trackId: this._trackId,
-                lyrics: null,
-            };
             const url = `https://music.xianqiao.wang/neteaseapiv2/search?${searchParams}`;
             try {
                 this.debugLog("Netease search fetch URL:", url);
@@ -355,20 +324,18 @@ class SyncLyrics {
                 });
                 if (!res.ok) {
                     this.warnLog(`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Netease - Search]`);
-                    if ((!this._cache || !((_a = this._cache) === null || _a === void 0 ? void 0 : _a.lyrics)) &&
-                        ((_b = this._cache) === null || _b === void 0 ? void 0 : _b.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 const data = yield res.json();
-                if (!((_c = data === null || data === void 0 ? void 0 : data.result) === null || _c === void 0 ? void 0 : _c.songs) || ((_e = (_d = data === null || data === void 0 ? void 0 : data.result) === null || _d === void 0 ? void 0 : _d.songs) === null || _e === void 0 ? void 0 : _e.length) <= 0) {
-                    if ((!this._cache || !((_f = this._cache) === null || _f === void 0 ? void 0 : _f.lyrics)) &&
-                        ((_g = this._cache) === null || _g === void 0 ? void 0 : _g.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                if (!((_a = data === null || data === void 0 ? void 0 : data.result) === null || _a === void 0 ? void 0 : _a.songs) || ((_c = (_b = data === null || data === void 0 ? void 0 : data.result) === null || _b === void 0 ? void 0 : _b.songs) === null || _c === void 0 ? void 0 : _c.length) <= 0) {
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     this.infoLog("No songs were found [Netease - Search]");
                     return null;
                 }
-                const track = (_j = (_h = data === null || data === void 0 ? void 0 : data.result) === null || _h === void 0 ? void 0 : _h.songs) === null || _j === void 0 ? void 0 : _j.find((listItem) => {
+                const track = (_e = (_d = data === null || data === void 0 ? void 0 : data.result) === null || _d === void 0 ? void 0 : _d.songs) === null || _e === void 0 ? void 0 : _e.find((listItem) => {
                     var _a, _b;
                     return ((_a = listItem.name) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === ((_b = metadata.track) === null || _b === void 0 ? void 0 : _b.toLowerCase()) &&
                         // listItem.album?.name?.toLowerCase() === metadata.album?.toLowerCase() &&
@@ -379,9 +346,8 @@ class SyncLyrics {
                 });
                 this.debugLog("Netease search filtered track:", track);
                 if (!track) {
-                    if ((!this._cache || !((_k = this._cache) === null || _k === void 0 ? void 0 : _k.lyrics)) &&
-                        ((_l = this._cache) === null || _l === void 0 ? void 0 : _l.trackId) !== this._trackId)
-                        this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     this.infoLog("No songs were found with the current name and artist [Netease - Search]");
                     return null;
                 }
@@ -390,9 +356,8 @@ class SyncLyrics {
                 return trackId;
             }
             catch (e) {
-                if ((!this._cache || !((_m = this._cache) === null || _m === void 0 ? void 0 : _m.lyrics)) &&
-                    ((_o = this._cache) === null || _o === void 0 ? void 0 : _o.trackId) !== this._trackId)
-                    this._cache = cacheData;
+                if (!this.cache.has(this._trackId))
+                    this.cache.set(this._trackId, null);
                 this.errorLog("Something went wrong while fetching the lyrics [Netease - Search]", e);
                 return null;
             }
@@ -414,10 +379,6 @@ class SyncLyrics {
             if (!metadata)
                 return;
             this.infoLog(`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [LRCLIB]`);
-            const cacheData = {
-                trackId: this._trackId,
-                lyrics: null,
-            };
             // @ts-ignore
             const searchParams = new URLSearchParams({
                 track_name: metadata.track,
@@ -435,7 +396,8 @@ class SyncLyrics {
                 });
                 if (!res.ok) {
                     this.warnLog(`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [LRCLIB]`);
-                    this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 const data = yield res.json();
@@ -448,17 +410,19 @@ class SyncLyrics {
                 this.debugLog("lrclib filtered track:", match);
                 if (!match || !match.syncedLyrics || ((_a = match.syncedLyrics) === null || _a === void 0 ? void 0 : _a.length) <= 0) {
                     this.infoLog("The fetched song does not have synced lyrics [LRCLIB]");
-                    this._cache = cacheData;
+                    if (!this.cache.has(this._trackId))
+                        this.cache.set(this._trackId, null);
                     return null;
                 }
                 this.infoLog("Successfully fetched and cached the synced lyrics [LRCLIB]");
-                cacheData.lyrics = match.syncedLyrics;
-                this._cache = cacheData;
+                if (!this.cache.has(this._trackId))
+                    this.cache.set(this._trackId, match.syncedLyrics);
                 this._lyricsSource = "lrclib.net";
                 return match.syncedLyrics;
             }
             catch (e) {
-                this._cache = cacheData;
+                if (!this.cache.has(this._trackId))
+                    this.cache.set(this._trackId, null);
                 this.errorLog("Something went wrong while fetching the lyrics [LRCLIB]", e);
                 return null;
             }
@@ -466,7 +430,6 @@ class SyncLyrics {
     }
     fetchLyricsMusixmatch(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             if (!metadata)
                 return;
             const tokenData = yield this.getMusixmatchUsertoken();
@@ -474,16 +437,11 @@ class SyncLyrics {
             if (!tokenData)
                 return null;
             this.infoLog(`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [Musixmatch]`);
-            const cacheData = {
-                trackId: this._trackId,
-                lyrics: null,
-            };
             const commonTrackId = yield this._searchLyricsMusixmatch(metadata, tokenData);
             if (!commonTrackId) {
                 this.infoLog("Missing commontrack_id [Musixmatch - Search]");
-                if ((!this._cache || !((_a = this._cache) === null || _a === void 0 ? void 0 : _a.lyrics)) &&
-                    ((_b = this._cache) === null || _b === void 0 ? void 0 : _b.trackId) !== this._trackId)
-                    this._cache = cacheData;
+                if (!this.cache.has(this._trackId))
+                    this.cache.set(this._trackId, null);
                 return null;
             }
             const lyrics = yield this._fetchLyricsMusixmatch(metadata, commonTrackId, tokenData);
@@ -492,19 +450,13 @@ class SyncLyrics {
     }
     fetchLyricsNetease(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             if (!metadata)
                 return;
-            const cacheData = {
-                trackId: this._trackId,
-                lyrics: null,
-            };
             const trackId = yield this._searchLyricsNetease(metadata);
             if (!trackId) {
                 this.infoLog("Missing track ID [Netease - Search]");
-                if ((!this._cache || !((_a = this._cache) === null || _a === void 0 ? void 0 : _a.lyrics)) &&
-                    ((_b = this._cache) === null || _b === void 0 ? void 0 : _b.trackId) !== this._trackId)
-                    this._cache = cacheData;
+                if (!this.cache.has(this._trackId))
+                    this.cache.set(this._trackId, null);
                 return null;
             }
             const lyrics = yield this._fetchLyricsNetease(metadata, trackId);
@@ -513,43 +465,18 @@ class SyncLyrics {
     }
     getLyrics(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(metadata === null || metadata === void 0 ? void 0 : metadata.track) && !(metadata === null || metadata === void 0 ? void 0 : metadata.artist) && !(metadata === null || metadata === void 0 ? void 0 : metadata.album))
-                throw new Error("SyncLyrics (getlyrics): At least one of track, artist or album must be present");
-            this._trackId = btoa(unescape(encodeURIComponent(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`)));
-            if (!this._cache) {
-                this.infoLog("No cached lyrics, fetching the song data");
-                this.lyrics = yield this._getLyrics(metadata);
-                return {
-                    trackId: this._trackId,
-                    lyrics: this.lyrics,
-                    track: metadata.track,
-                    artist: metadata.artist,
-                    album: metadata.album,
-                    source: this._lyricsSource,
-                    cached: false,
-                    parse: this.parseLyrics,
-                };
-            }
-            if (this._trackId !== this._cache.trackId) {
-                this.infoLog("Cached song is different from current song, fetching the song data");
-                this._cache = null;
-                this.lyrics = yield this._getLyrics(metadata);
-                return {
-                    trackId: this._trackId,
-                    lyrics: this.lyrics,
-                    track: metadata.track,
-                    artist: metadata.artist,
-                    album: metadata.album,
-                    source: this._lyricsSource,
-                    cached: false,
-                    parse: this.parseLyrics,
-                };
-            }
-            if (!this._cache.lyrics) {
-                this.infoLog("Cached lyrics are null");
-                return null;
-            }
-            this.lyrics = this._cache.lyrics;
+            if (!(metadata === null || metadata === void 0 ? void 0 : metadata.track) &&
+                !(metadata === null || metadata === void 0 ? void 0 : metadata.artist) &&
+                !(metadata === null || metadata === void 0 ? void 0 : metadata.album) &&
+                !(metadata === null || metadata === void 0 ? void 0 : metadata.trackId))
+                throw new Error("SyncLyrics (getlyrics): At least one of track, artist, album or trackId must be present");
+            this._trackId =
+                metadata.trackId ||
+                    btoa(unescape(encodeURIComponent(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`)));
+            const hasCachedLyrics = this.cache.has(this._trackId);
+            this.lyrics = hasCachedLyrics
+                ? this.cache.get(this._trackId)
+                : yield this._getLyrics(metadata);
             return {
                 trackId: this._trackId,
                 lyrics: this.lyrics,
@@ -557,10 +484,15 @@ class SyncLyrics {
                 artist: metadata.artist,
                 album: metadata.album,
                 source: this._lyricsSource,
-                cached: false,
+                cached: hasCachedLyrics,
                 parse: this.parseLyrics,
             };
         });
+    }
+    getTrackId(metadata) {
+        if (metadata.trackId)
+            return metadata.trackId;
+        return btoa(unescape(encodeURIComponent(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`)));
     }
     getMusixmatchUsertoken(cookies) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -573,7 +505,6 @@ class SyncLyrics {
             const tokenData = yield this.getMusixmatchToken();
             if (tokenData)
                 return tokenData;
-            // if (global.fetchingMxmToken) return null;
             this.infoLog("Fetching the token from the API...");
             const url = "https://apic-desktop.musixmatch.com/ws/1.1/token.get?user_language=en&app_id=web-desktop-app-v1.0";
             try {
@@ -605,7 +536,6 @@ class SyncLyrics {
                     this.warnLog("Musixmatch usertoken endpoint is being ratelimited, retrying in 10 seconds...");
                     yield sleep(10000); // wait 10 seconds
                     this.infoLog("Retrying to fetch the Musixmatch usertken...");
-                    // global.fetchingMxmToken = false;
                     return yield this.getMusixmatchUsertoken(cookies);
                 }
                 const usertoken = (_f = (_e = data === null || data === void 0 ? void 0 : data.message) === null || _e === void 0 ? void 0 : _e.body) === null || _f === void 0 ? void 0 : _f.user_token;
@@ -619,7 +549,6 @@ class SyncLyrics {
                     expiresAt: new Date(Date.now() + 10 * 60 * 1000).getTime(), // 10 minutes
                 };
                 yield this.saveMusixmatchToken(json);
-                // global.fetchingMxmToken = false;
                 this.infoLog("Successfully fetched the usertoken");
                 return json;
             }

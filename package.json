@@ -1,6 +1,6 @@
 {
   "name": "@stef-0012/synclyrics",
-  "version": "1.2.12",
+  "version": "1.3.0",
   "description": "Get the synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
   "main": "dist/index.js",
   "types": "./types/index.d.ts",
@@ -10,10 +10,13 @@
     "types/*"
   ],
   "scripts": {
+    "test": "node tests/test.js",
     "tests:valid1": "node tests/valid1.js",
     "tests:valid2": "node tests/valid2.js",
     "tests:invalid1": "node tests/invalid1.js",
-    "tests:invalid2": "node tests/invalid2.js"
+    "tests:invalid2": "node tests/invalid2.js",
+    "tests:cache1": "node tests/cache1.js",
+    "tests:cache2": "node tests/cache2.js"
   },
   "type": "commonjs",
   "repository": {
