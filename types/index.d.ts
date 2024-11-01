@@ -11,10 +11,6 @@ export interface Metadata {
     length?: number;
     trackId?: string;
 }
-export interface LyricsCache {
-    lyrics: string | null;
-    trackId: string | null;
-}
 export interface Cache<K, V> {
     set(key: K, value: V): void;
     get(key: K): V | undefined | null;
@@ -25,29 +21,7 @@ export interface Data {
     logLevel?: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
-    trackId?: string;
-    cache?: Cache<string | null | undefined, {
-        plain: {
-            source: string | null | undefined;
-            lyrics: string | null | undefined;
-        };
-        lineSynced: {
-            source: string | null | undefined;
-            lyrics: string | null | undefined;
-        };
-        wordSynced: {
-            source: string | null | undefined;
-            lyrics: Array<{
-                end: number;
-                start: number;
-                lyric: string;
-                syncedLyric: Array<{
-                    character: string;
-                    time: number;
-                }>;
-            }> | null | undefined;
-        };
-    } | null | undefined | null>;
+    cache?: Cache<string | null | undefined, CacheLyrics | null | undefined | null>;
     saveMusixmatchToken?: (tokenData: TokenData) => void;
     getMusixmatchToken?: () => TokenData | null | undefined;
 }
@@ -55,40 +29,63 @@ export interface FormattedLyric {
     time: number;
     text: string;
 }
+export interface LineSyncedLyricsData {
+    parse: (lyrics?: string | null | undefined) => FormattedLyric[] | null;
+    source: string | null | undefined;
+    lyrics: string | null | undefined;
+}
+export interface PlainLyricsData {
+    source: string | null | undefined;
+    lyrics: string | null | undefined;
+}
+export interface WordSyncedLyricsLine {
+    character: string;
+    time: number;
+}
+export interface WordSyncedLyrics {
+    end: number;
+    start: number;
+    lyric: string;
+    syncedLyric: Array<WordSyncedLyricsLine>;
+}
+export interface WordSyncedLyricsData {
+    source: string | null | undefined;
+    lyrics: Array<WordSyncedLyrics> | null | undefined;
+}
+export interface Lyrics {
+    lineSynced: LineSyncedLyricsData;
+    plain: PlainLyricsData;
+    wordSynced: WordSyncedLyricsData;
+}
+export interface CacheLineSyncedLyricsData {
+    source: string | null | undefined;
+    lyrics: string | null | undefined;
+}
+export interface CacheLyrics {
+    lineSynced: CacheLineSyncedLyricsData;
+    plain: PlainLyricsData;
+    wordSynced: WordSyncedLyricsData;
+}
+export interface LyricsOutput {
+    trackId: string;
+    lyrics: Lyrics;
+    track: string | undefined;
+    artist: string | undefined;
+    album: string | undefined;
+    cached: boolean;
+}
 export declare class SyncLyrics {
     logLevel: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator: string;
     sources: Sources;
-    lyrics: string | null | undefined;
-    cache: Cache<string | null | undefined, {
-        plain: {
-            source: string | null | undefined;
-            lyrics: string | null | undefined;
-        };
-        lineSynced: {
-            source: string | null | undefined;
-            lyrics: string | null | undefined;
-        };
-        wordSynced: {
-            source: string | null | undefined;
-            lyrics: Array<{
-                end: number;
-                start: number;
-                lyric: string;
-                syncedLyric: Array<{
-                    character: string;
-                    time: number;
-                }>;
-            }> | null | undefined;
-        };
-    } | null | undefined | null>;
+    private lyrics;
+    cache: Cache<string | null | undefined, CacheLyrics | null | undefined | null>;
     saveMusixmatchToken: null | undefined | ((tokenData: TokenData) => void | Promise<void>);
     getMusixmatchToken: null | undefined | (() => TokenData | Promise<TokenData | null | undefined> | null | undefined);
-    _cache: LyricsCache | null;
-    _fetching: boolean;
-    _fetchingTrackId: string | null;
-    _fetchingSource: string | null;
-    _trackId: string | null;
+    private _fetching;
+    private _fetchingTrackId;
+    private _fetchingSource;
+    private _trackId;
     constructor(data?: Data);
     private getMusixmatchUsertoken;
     private _searchLyricsMusixmatch;
@@ -103,36 +100,7 @@ export declare class SyncLyrics {
     private fetchLyricsMusixmatch;
     private fetchLyricsNetease;
     private _getLyrics;
-    getLyrics(metadata: Metadata, skipCache?: boolean): Promise<{
-        trackId: string;
-        lyrics: {
-            lineSynced: {
-                parse: (lyrics?: string | null | undefined) => FormattedLyric[] | null;
-                source: string | null | undefined;
-                lyrics: string | null | undefined;
-            };
-            plain: {
-                source: string | null | undefined;
-                lyrics: string | null | undefined;
-            };
-            wordSynced: {
-                source: string | null | undefined;
-                lyrics: Array<{
-                    end: number;
-                    start: number;
-                    lyric: string;
-                    syncedLyric: Array<{
-                        character: string;
-                        time: number;
-                    }>;
-                }> | null | undefined;
-            };
-        };
-        track: string | undefined;
-        artist: string | undefined;
-        album: string | undefined;
-        cached: boolean;
-    }>;
+    getLyrics(metadata: Metadata, skipCache?: boolean): Promise<LyricsOutput>;
     parseLyrics(lyrics?: string | null | undefined): FormattedLyric[] | null;
     getTrackId(metadata: Metadata): string;
     private warnLog;

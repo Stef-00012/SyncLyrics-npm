@@ -9,7 +9,9 @@
     "types/*"
   ],
   "scripts": {
-    "build": "tsc && minify dist/index.js > dist/index.min.js",
+    "build": "npm run build:compile && npm run build:docs",
+    "build:compile": "tsc && minify dist/index.js > dist/index.min.js",
+    "build:docs": "typedoc src --plugin typedoc-github-theme",
     "test": "node tests/test.js",
     "tests:valid1": "node tests/valid1.js",
     "tests:valid2": "node tests/valid2.js",
@@ -53,7 +55,9 @@
   },
   "homepage": "https://github.com/Stef-00012/SyncLyrics-npm",
   "devDependencies": {
-    "@types/node": "^22.7.6"
+    "@types/node": "^22.7.6",
+    "typedoc": "^0.26.11",
+    "typedoc-github-theme": "^0.1.2"
   },
   "dependencies": {
     "fs": "^0.0.1-security",

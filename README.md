@@ -1,8 +1,6 @@
 # @stef-0012/synclyrics (SyncLyrics)
 
-> This package is a conversion to npm of [Stef-00012/SyncLyrics](https://github.com/Stef-00012/SyncLyrics).
-
-SyncLyrics allows you to get the synced lyrics of any song avaible on [Musixmatch](https://musixmatch.com), [LrcLib.net](https://lrclib.net) or [Netease](https://music.xianqiao.wang).
+SyncLyrics allows you to get the plain, line synced and word synced lyrics of any song avaible on [Musixmatch](https://musixmatch.com), [LrcLib.net](https://lrclib.net) or [Netease](https://music.xianqiao.wang).
 
 **Installation**: `npm i @stef-0012/synclyrics`.
 
@@ -55,5 +53,3 @@ LyricsManager.getLyrics({
     console.log(data.parse()) // Array of objects with time as seconds and text of each line
 })
 ```
-
-When no lyrics are avaible, they are `null`.

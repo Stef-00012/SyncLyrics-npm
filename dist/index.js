@@ -31,11 +31,10 @@ class SyncLyrics {
         if (this.sources.length <= 0)
             throw new Error("SyncLyrics: You must provide atleast one source");
         this.lyrics = null;
-        this._cache = null;
         this._fetching = false;
         this._fetchingTrackId = null;
         this._fetchingSource = null;
-        this._trackId = (data === null || data === void 0 ? void 0 : data.trackId) || null;
+        this._trackId = null;
         this._fetchLineSyncedLyricsMusixmatch =
             this._fetchLineSyncedLyricsMusixmatch.bind(this);
         this._fetchWordSyncedLyricsMusixmatch =
@@ -76,7 +75,6 @@ class SyncLyrics {
             try {
                 const res = yield fetch(url, {
                     redirect: "manual",
-                    // @ts-ignore
                     headers: {
                         cookie: cookies,
                     },
@@ -86,7 +84,6 @@ class SyncLyrics {
                     const setCookie = res.headers
                         .getSetCookie()
                         .map((cookie) => cookie.split(";").shift())
-                        // @ts-ignore
                         .filter((cookie) => cookie.split("=").pop() !== "unknown")
                         .join("; ");
                     this.debugLog("Re-fetching with the cookies...");
@@ -100,7 +97,7 @@ class SyncLyrics {
                 if (((_b = (_a = data === null || data === void 0 ? void 0 : data.message) === null || _a === void 0 ? void 0 : _a.header) === null || _b === void 0 ? void 0 : _b.status_code) === 401 &&
                     ((_d = (_c = data === null || data === void 0 ? void 0 : data.message) === null || _c === void 0 ? void 0 : _c.header) === null || _d === void 0 ? void 0 : _d.hint) === "captcha") {
                     this.warnLog("Musixmatch usertoken endpoint is being ratelimited, retrying in 10 seconds...");
-                    yield sleep(10000); // wait 10 seconds
+                    yield sleep(10000);
                     this.infoLog("Retrying to fetch the Musixmatch usertken...");
                     return yield this.getMusixmatchUsertoken(cookies);
                 }
@@ -112,7 +109,7 @@ class SyncLyrics {
                 const json = {
                     cookies,
                     usertoken,
-                    expiresAt: new Date(Date.now() + 10 * 60 * 1000).getTime(), // 10 minutes
+                    expiresAt: new Date(Date.now() + 10 * 60 * 1000).getTime(),
                 };
                 yield this.saveMusixmatchToken(json);
                 this.infoLog("Successfully fetched the usertoken");
@@ -126,9 +123,7 @@ class SyncLyrics {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
             if (!metadata || !tokenData)
                 return null;
-            // @ts-ignore
             const duration = Number.parseFloat(metadata.length) / 1000;
-            // @ts-ignore
             const searchParams = new URLSearchParams({
                 app_id: "web-desktop-app-v1.0",
                 usertoken: tokenData.usertoken,
@@ -144,7 +139,6 @@ class SyncLyrics {
             try {
                 this.debugLog("Musixmatch search fetch URL:", url);
                 const res = yield fetch(url, {
-                    // @ts-ignore
                     headers: {
                         cookie: tokenData.cookies,
                     },
@@ -213,7 +207,6 @@ class SyncLyrics {
             try {
                 this.debugLog("Musixmatch lyrics fetch URL:", url);
                 const res = yield fetch(url, {
-                    // @ts-ignore
                     headers: {
                         cookie: tokenData.cookies,
                     },
@@ -257,7 +250,6 @@ class SyncLyrics {
             try {
                 this.debugLog("Musixmatch synced lyrics fetch URL:", url);
                 const res = yield fetch(url, {
-                    // @ts-ignore
                     headers: {
                         cookie: tokenData.cookies,
                     },
@@ -301,7 +293,6 @@ class SyncLyrics {
             try {
                 this.debugLog("Musixmatch lyrics fetch URL:", url);
                 const res = yield fetch(url, {
-                    // @ts-ignore
                     headers: {
                         cookie: tokenData.cookies,
                     },
@@ -371,7 +362,6 @@ class SyncLyrics {
     _searchLyricsNetease(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e;
-            // @ts-ignore
             const searchParams = new URLSearchParams({
                 limit: 10,
                 type: 1,
@@ -499,7 +489,6 @@ class SyncLyrics {
             if (!metadata)
                 return;
             this.infoLog(`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [LRCLIB]`);
-            // @ts-ignore
             const searchParams = new URLSearchParams({
                 track_name: metadata.track,
                 artist_name: metadata.artist,
@@ -733,7 +722,6 @@ class SyncLyrics {
         let lastTime;
         for (const index in lyricsSplit) {
             const lyricText = lyricsSplit[index].split(" ");
-            // @ts-ignore
             const time = lyricText.shift().replace(/[\[\]]/g, "");
             const text = lyricText.join(" ");
             const minutes = time.split(":")[0];
@@ -754,7 +742,6 @@ class SyncLyrics {
                 });
                 continue;
             }
-            // @ts-ignore
             if (instrumentalLyricIndicator && (!lastTime || lastTime - time > 3)) {
                 lastTime = time;
                 formattedLyrics.push({
