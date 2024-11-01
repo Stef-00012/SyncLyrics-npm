@@ -1,4 +1,4 @@
-const { SyncLyrics } = require("../dist/index.js");
+const { SyncLyrics } = require("../dist/index.min.js");
 const fs = require('node:fs')
 
 const LyricsManager = new SyncLyrics({

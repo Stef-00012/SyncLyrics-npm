@@ -1,15 +1,15 @@
 {
   "name": "@stef-0012/synclyrics",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Get the plain, line synced & word synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
-  "main": "dist/index.js",
+  "main": "dist/index.min.js",
   "types": "./types/index.d.ts",
   "files": [
-    "functions/*",
-    "dist/*",
+    "dist/index.min.js",
     "types/*"
   ],
   "scripts": {
+    "build": "tsc && minify dist/index.js > dist/index.min.js",
     "test": "node tests/test.js",
     "tests:valid1": "node tests/valid1.js",
     "tests:valid2": "node tests/valid2.js",

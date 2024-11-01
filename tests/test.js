@@ -1,4 +1,4 @@
-const { SyncLyrics } = require("../dist/index.js");
+const { SyncLyrics } = require("../dist/index.min.js");
 const { describe, it } = require("node:test");
 
 describe("Invalid methods", () => {
