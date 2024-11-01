@@ -49,17 +49,16 @@ export declare class SyncLyrics {
     _fetchingSource: string | null;
     _trackId: string | null;
     constructor(data?: Data);
-    private _fetchLyricsMusixmatch;
-    private _fetchLyricsNetease;
-    private _getLyrics;
-    private _parseNeteaseLyrics;
+    private getMusixmatchUsertoken;
     private _searchLyricsMusixmatch;
+    private _fetchLyricsMusixmatch;
     private _searchLyricsNetease;
-    private debugLog;
-    private errorLog;
+    private _fetchLyricsNetease;
+    private _parseNeteaseLyrics;
     private fetchLyricsLrclib;
     private fetchLyricsMusixmatch;
     private fetchLyricsNetease;
+    private _getLyrics;
     getLyrics(metadata: Metadata): Promise<{
         trackId: string;
         lyrics: string | null;
@@ -70,10 +69,11 @@ export declare class SyncLyrics {
         cached: boolean;
         parse: (lyrics?: string | null) => FormattedLyric[] | null;
     }>;
-    getTrackId(metadata: Metadata): string;
-    private getMusixmatchUsertoken;
-    private infoLog;
     parseLyrics(lyrics?: string | null): FormattedLyric[] | null;
+    getTrackId(metadata: Metadata): string;
     private warnLog;
+    private debugLog;
+    private errorLog;
+    private infoLog;
 }
 export declare function normalize(string: string): string;
