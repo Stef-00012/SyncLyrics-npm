@@ -1145,9 +1145,13 @@ export class SyncLyrics {
 
 		const cachedLyrics = skipCache ? null : this.cache.get(this._trackId);
 
+		console.log('cached', cachedLyrics)
+
 		const lyrics = cachedLyrics || (await this._getLyrics(metadata));
 
-		if (!this.cache.has(this._trackId) && !skipCache)
+		console.log('cached/fetched', lyrics)
+
+		if (!skipCache && (!this.cache.has(this._trackId) || (lyrics?.plain.lyrics && !cachedLyrics?.plain.lyrics) || (lyrics?.lineSynced.lyrics && !cachedLyrics?.lineSynced.lyrics) || (lyrics?.wordSynced.lyrics && !cachedLyrics?.wordSynced.lyrics)))
 			this.cache.set(
 				this._trackId,
 				lyrics || {

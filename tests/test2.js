@@ -12,8 +12,12 @@ const LyricsManager = new SyncLyrics({
     },
 })
 
-LyricsManager.getLyrics({
-    track: "drunk text",
-    artist: "Henry Moodie",
-    album: "in all of my lonely nights"
-}).then(x => console.log(JSON.stringify(x.lyrics.wordSynced.lyrics, null, 4)))
+setInterval(async () => {
+    const l = await LyricsManager.getLyrics({
+        track: "drunk text",
+        artist: "Henry Moodie",
+        album: "in all of my lonely nights"
+    })
+    
+    console.log(l)
+}, 500)
