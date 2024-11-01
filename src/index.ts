@@ -1122,7 +1122,7 @@ export class SyncLyrics {
 		return lyricsData;
 	}
 
-	public async getLyrics(metadata: Metadata, skipCache: boolean) {
+	public async getLyrics(metadata: Metadata, skipCache?: boolean) {
 		if (
 			!metadata?.track &&
 			!metadata?.artist &&

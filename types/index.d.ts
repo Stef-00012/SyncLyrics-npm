@@ -103,7 +103,7 @@ export declare class SyncLyrics {
     private fetchLyricsMusixmatch;
     private fetchLyricsNetease;
     private _getLyrics;
-    getLyrics(metadata: Metadata, skipCache: boolean): Promise<{
+    getLyrics(metadata: Metadata, skipCache?: boolean): Promise<{
         trackId: string;
         lyrics: {
             lineSynced: {
