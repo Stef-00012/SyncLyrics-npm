@@ -155,6 +155,15 @@ describe("Cache [default method]", () => {
 
 		assert.strictEqual(data.cached, true);
 	});
+
+	it("Should not be cached [good old days]", async ({ assert }) => {
+		const data = await LyricsManager.getLyrics({
+			track: "good old days",
+			artist: "Henry Moodie",
+		}, true);
+
+		assert.strictEqual(data.cached, false);
+	});
 });
 
 describe("Cache [custom method]", () => {
@@ -197,6 +206,15 @@ describe("Cache [custom method]", () => {
 
 		assert.strictEqual(data.cached, true);
 	});
+
+	it("Should not be cached [good old days]", async ({ assert }) => {
+		const data = await LyricsManager.getLyrics({
+			track: "good old days",
+			artist: "Henry Moodie",
+		}, true);
+
+		assert.strictEqual(data.cached, false);
+	});
 });
 
 describe("Cache with ID search", () => {
@@ -234,5 +252,13 @@ describe("Cache with ID search", () => {
 		});
 
 		assert.strictEqual(data.cached, true);
+	});
+
+	it("Should not be cached [still dancing]", async ({ assert }) => {
+		const data = await LyricsManager.getLyrics({
+			trackId: "c3RpbGwgZGFuY2luZy1IZW5yeSBNb29kaWUt",
+		}, true);
+
+		assert.strictEqual(data.cached, false);
 	});
 });

@@ -26,7 +26,28 @@ export interface Data {
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
     trackId?: string;
-    cache?: Cache<string, string | undefined | null>;
+    cache?: Cache<string | null | undefined, {
+        plain: {
+            source: string | null | undefined;
+            lyrics: string | null | undefined;
+        };
+        lineSynced: {
+            source: string | null | undefined;
+            lyrics: string | null | undefined;
+        };
+        wordSynced: {
+            source: string | null | undefined;
+            lyrics: Array<{
+                end: number;
+                start: number;
+                lyric: string;
+                syncedLyric: Array<{
+                    character: string;
+                    time: number;
+                }>;
+            }> | null | undefined;
+        };
+    } | null | undefined | null>;
     saveMusixmatchToken?: (tokenData: TokenData) => void;
     getMusixmatchToken?: () => TokenData | null | undefined;
 }
@@ -38,12 +59,32 @@ export declare class SyncLyrics {
     logLevel: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator: string;
     sources: Sources;
-    lyrics: string | null;
-    cache: Cache<string | null | undefined, string | null | undefined>;
+    lyrics: string | null | undefined;
+    cache: Cache<string | null | undefined, {
+        plain: {
+            source: string | null | undefined;
+            lyrics: string | null | undefined;
+        };
+        lineSynced: {
+            source: string | null | undefined;
+            lyrics: string | null | undefined;
+        };
+        wordSynced: {
+            source: string | null | undefined;
+            lyrics: Array<{
+                end: number;
+                start: number;
+                lyric: string;
+                syncedLyric: Array<{
+                    character: string;
+                    time: number;
+                }>;
+            }> | null | undefined;
+        };
+    } | null | undefined | null>;
     saveMusixmatchToken: null | undefined | ((tokenData: TokenData) => void | Promise<void>);
     getMusixmatchToken: null | undefined | (() => TokenData | Promise<TokenData | null | undefined> | null | undefined);
     _cache: LyricsCache | null;
-    _lyricsSource: string | null;
     _fetching: boolean;
     _fetchingTrackId: string | null;
     _fetchingSource: string | null;
@@ -51,6 +92,9 @@ export declare class SyncLyrics {
     constructor(data?: Data);
     private getMusixmatchUsertoken;
     private _searchLyricsMusixmatch;
+    private _fetchPlainLyricsMusixmatch;
+    private _fetchLineSyncedLyricsMusixmatch;
+    private _fetchWordSyncedLyricsMusixmatch;
     private _fetchLyricsMusixmatch;
     private _searchLyricsNetease;
     private _fetchLyricsNetease;
@@ -59,17 +103,37 @@ export declare class SyncLyrics {
     private fetchLyricsMusixmatch;
     private fetchLyricsNetease;
     private _getLyrics;
-    getLyrics(metadata: Metadata): Promise<{
+    getLyrics(metadata: Metadata, skipCache: boolean): Promise<{
         trackId: string;
-        lyrics: string | null;
+        lyrics: {
+            lineSynced: {
+                parse: (lyrics?: string | null | undefined) => FormattedLyric[] | null;
+                source: string | null | undefined;
+                lyrics: string | null | undefined;
+            };
+            plain: {
+                source: string | null | undefined;
+                lyrics: string | null | undefined;
+            };
+            wordSynced: {
+                source: string | null | undefined;
+                lyrics: Array<{
+                    end: number;
+                    start: number;
+                    lyric: string;
+                    syncedLyric: Array<{
+                        character: string;
+                        time: number;
+                    }>;
+                }> | null | undefined;
+            };
+        };
         track: string | undefined;
         artist: string | undefined;
         album: string | undefined;
-        source: string | null;
         cached: boolean;
-        parse: (lyrics?: string | null) => FormattedLyric[] | null;
     }>;
-    parseLyrics(lyrics?: string | null): FormattedLyric[] | null;
+    parseLyrics(lyrics?: string | null | undefined): FormattedLyric[] | null;
     getTrackId(metadata: Metadata): string;
     private warnLog;
     private debugLog;

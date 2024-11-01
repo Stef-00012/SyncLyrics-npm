@@ -43,7 +43,34 @@ export interface Data {
 	instrumentalLyricsIndicator?: string;
 	sources?: Sources;
 	trackId?: string;
-	cache?: Cache<string, string | undefined | null>;
+	cache?: Cache<
+		string | null | undefined,
+		| {
+				plain: {
+					source: string | null | undefined;
+					lyrics: string | null | undefined;
+				};
+				lineSynced: {
+					source: string | null | undefined;
+					lyrics: string | null | undefined;
+				};
+				wordSynced: {
+					source: string | null | undefined;
+					lyrics:
+						| Array<{
+								end: number;
+								start: number;
+								lyric: string;
+								syncedLyric: Array<{ character: string; time: number }>;
+						  }>
+						| null
+						| undefined;
+				};
+		  }
+		| null
+		| undefined
+		| null
+	>;
 	saveMusixmatchToken?: (tokenData: TokenData) => void;
 	getMusixmatchToken?: () => TokenData | null | undefined;
 }
@@ -57,8 +84,35 @@ export class SyncLyrics {
 	logLevel: "none" | "info" | "warn" | "error" | "debug";
 	instrumentalLyricsIndicator: string;
 	sources: Sources;
-	lyrics: string | null;
-	cache: Cache<string | null | undefined, string | null | undefined>;
+	lyrics: string | null | undefined;
+	cache: Cache<
+		string | null | undefined,
+		| {
+				plain: {
+					source: string | null | undefined;
+					lyrics: string | null | undefined;
+				};
+				lineSynced: {
+					source: string | null | undefined;
+					lyrics: string | null | undefined;
+				};
+				wordSynced: {
+					source: string | null | undefined;
+					lyrics:
+						| Array<{
+								end: number;
+								start: number;
+								lyric: string;
+								syncedLyric: Array<{ character: string; time: number }>;
+						  }>
+						| null
+						| undefined;
+				};
+		  }
+		| null
+		| undefined
+		| null
+	>;
 	saveMusixmatchToken:
 		| null
 		| undefined
@@ -73,7 +127,6 @@ export class SyncLyrics {
 				| undefined);
 
 	_cache: LyricsCache | null;
-	_lyricsSource: string | null;
 	_fetching: boolean;
 	_fetchingTrackId: string | null;
 	_fetchingSource: string | null;
@@ -93,19 +146,24 @@ export class SyncLyrics {
 		this.lyrics = null;
 
 		this._cache = null;
-		this._lyricsSource = null;
 		this._fetching = false;
 		this._fetchingTrackId = null;
 		this._fetchingSource = null;
 		this._trackId = data?.trackId || null;
 
+		this._fetchLineSyncedLyricsMusixmatch =
+			this._fetchLineSyncedLyricsMusixmatch.bind(this);
+		this._fetchWordSyncedLyricsMusixmatch =
+			this._fetchWordSyncedLyricsMusixmatch.bind(this);
+		this._fetchPlainLyricsMusixmatch =
+			this._fetchPlainLyricsMusixmatch.bind(this);
 		this._searchLyricsMusixmatch = this._searchLyricsMusixmatch.bind(this);
-		this.getMusixmatchUsertoken = this.getMusixmatchUsertoken.bind(this);
 		this._fetchLyricsMusixmatch = this._fetchLyricsMusixmatch.bind(this);
+		this.getMusixmatchUsertoken = this.getMusixmatchUsertoken.bind(this);
 		this.fetchLyricsMusixmatch = this.fetchLyricsMusixmatch.bind(this);
 		this._searchLyricsNetease = this._searchLyricsNetease.bind(this);
-		this._fetchLyricsNetease = this._fetchLyricsNetease.bind(this);
 		this._parseNeteaseLyrics = this._parseNeteaseLyrics.bind(this);
+		this._fetchLyricsNetease = this._fetchLyricsNetease.bind(this);
 		this.fetchLyricsNetease = this.fetchLyricsNetease.bind(this);
 		this.fetchLyricsLrclib = this.fetchLyricsLrclib.bind(this);
 		this.parseLyrics = this.parseLyrics.bind(this);
@@ -230,9 +288,8 @@ export class SyncLyrics {
 			q_album: metadata.album || "",
 			page_size: 20,
 			page: 1,
-			f_has_subtitle: 1,
 			q_duration: duration || "",
-			f_subtitle_length: Math.floor(duration) || "",
+			s_track_rating: "asc",
 		});
 
 		const url: string = `https://apic-desktop.musixmatch.com/ws/1.1/track.search?${searchParams}`;
@@ -252,8 +309,6 @@ export class SyncLyrics {
 					`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Musixmatch - Search]`,
 				);
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				return null;
 			}
 
@@ -267,8 +322,6 @@ export class SyncLyrics {
 					"The usertoken has been temporary blocked for too many requests (captcha) [Musixmatch - Search]",
 				);
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				return null;
 			}
 
@@ -278,8 +331,6 @@ export class SyncLyrics {
 			);
 
 			if (data?.message?.body?.track_list?.length <= 0) {
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				this.infoLog("No songs were found [Musixmatch - Search]");
 
 				return null;
@@ -297,8 +348,6 @@ export class SyncLyrics {
 			this.debugLog("Musixmatch search filtered track:", track);
 
 			if (!track) {
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				this.infoLog(
 					"No songs were found with the current name and artist [Musixmatch - Search]",
 				);
@@ -306,14 +355,28 @@ export class SyncLyrics {
 				return null;
 			}
 
+			this.debugLog(track);
+
 			const commonTrackId = track?.track?.commontrack_id;
+			const trackId = track?.track?.track_id;
+			const hasLyrics = track?.track?.has_lyrics;
+			const hasLineSyncedLyrics = track?.track?.has_subtitles;
+			const hasWordSyncedLyrics = track?.track?.has_richsync;
+
+			if (!hasLyrics && !hasLineSyncedLyrics && !hasWordSyncedLyrics)
+				return null;
 
 			this.debugLog("Musixmatch commontrack_id", commonTrackId);
+			this.debugLog("Musixmatch track_id", trackId);
 
-			return commonTrackId;
+			return {
+				commonTrackId,
+				trackId,
+				hasLyrics,
+				hasLineSyncedLyrics,
+				hasWordSyncedLyrics,
+			};
 		} catch (e) {
-			if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 			this.errorLog(
 				"Something went wrong while fetching the lyrics [Musixmatch - Search]",
 				e,
@@ -323,12 +386,11 @@ export class SyncLyrics {
 		}
 	}
 
-	private async _fetchLyricsMusixmatch(
-		metadata: Metadata,
-		commonTrackId: string,
+	private async _fetchPlainLyricsMusixmatch(
 		tokenData: TokenData,
-	) {
-		if (!metadata || !commonTrackId || !tokenData) return null;
+		commonTrackId: string,
+	): Promise<string | null> {
+		if (!tokenData || !commonTrackId) return null;
 
 		const searchParams: URLSearchParams = new URLSearchParams({
 			app_id: "web-desktop-app-v1.0",
@@ -336,7 +398,7 @@ export class SyncLyrics {
 			commontrack_id: commonTrackId,
 		});
 
-		const url: string = `https://apic-desktop.musixmatch.com/ws/1.1/track.subtitle.get?${searchParams}`;
+		const url: string = `https://apic-desktop.musixmatch.com/ws/1.1/track.lyrics.get?${searchParams}`;
 
 		try {
 			this.debugLog("Musixmatch lyrics fetch URL:", url);
@@ -353,8 +415,6 @@ export class SyncLyrics {
 					`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Musixmatch - Lyrics]`,
 				);
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				return null;
 			}
 
@@ -368,7 +428,75 @@ export class SyncLyrics {
 					"The usertoken has been temporary blocked for too many requests (captcha)... [Musixmatch - Lyrics]",
 				);
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
+				return null;
+			}
+
+			this.debugLog("Musixmatch track data:", data?.message?.body);
+
+			const lyrics = data?.message?.body?.lyrics?.lyrics_body;
+
+			if (!lyrics) {
+				this.infoLog("Missing Lyrics [Musixmatch - Lyrics]");
+
+				return null;
+			}
+
+			this.infoLog(
+				"Successfully fetched and cached the plain lyrics [Musixmatch]",
+			);
+
+			return lyrics;
+		} catch (e) {
+			this.errorLog(
+				"Something went wrong while fetching the lyrics [Musixmatch - Lyrics]",
+				e,
+			);
+
+			return null;
+		}
+	}
+
+	private async _fetchLineSyncedLyricsMusixmatch(
+		tokenData: TokenData,
+		commonTrackId: string,
+	): Promise<string | null> {
+		if (!tokenData || !commonTrackId) return null;
+
+		const searchParams: URLSearchParams = new URLSearchParams({
+			app_id: "web-desktop-app-v1.0",
+			usertoken: tokenData.usertoken,
+			commontrack_id: commonTrackId,
+		});
+
+		const url: string = `https://apic-desktop.musixmatch.com/ws/1.1/track.subtitle.get?${searchParams}`;
+
+		try {
+			this.debugLog("Musixmatch synced lyrics fetch URL:", url);
+
+			const res: Response = await fetch(url, {
+				// @ts-ignore
+				headers: {
+					cookie: tokenData.cookies,
+				},
+			});
+
+			if (!res.ok) {
+				this.warnLog(
+					`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Musixmatch - Synced Lyrics]`,
+				);
+
+				return null;
+			}
+
+			const data = await res.json();
+
+			if (
+				data?.message?.header?.status_code === 401 &&
+				data?.message?.header?.hint === "captcha"
+			) {
+				this.warnLog(
+					"The usertoken has been temporary blocked for too many requests (captcha)... [Musixmatch - Synced Lyrics]",
+				);
 
 				return null;
 			}
@@ -378,9 +506,7 @@ export class SyncLyrics {
 			const lyrics = data?.message?.body?.subtitle?.subtitle_body;
 
 			if (!lyrics) {
-				this.infoLog("Missing Lyrics [Musixmatch - Lyrics]");
-
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
+				this.infoLog("Missing Lyrics [Musixmatch - Synced Lyrics]");
 
 				return null;
 			}
@@ -389,21 +515,167 @@ export class SyncLyrics {
 				"Successfully fetched and cached the synced lyrics [Musixmatch]",
 			);
 
-			this._lyricsSource = "Musixmatch";
-
-			this.cache.set(this._trackId, lyrics);
-
 			return lyrics;
 		} catch (e) {
-			this.cache.set(this._trackId, null);
-
 			this.errorLog(
-				"Something went wrong while fetching the lyrics [Musixmatch - Lyrics]",
+				"Something went wrong while fetching the lyrics [Musixmatch - Synced Lyrics]",
 				e,
 			);
 
 			return null;
 		}
+	}
+
+	private async _fetchWordSyncedLyricsMusixmatch(
+		tokenData: TokenData,
+		trackId: string,
+	): Promise<Array<{
+		end: number;
+		start: number;
+		lyric: string;
+		syncedLyric: Array<{ character: string; time: number }>;
+	}> | null> {
+		if (!tokenData || !trackId) return null;
+
+		const searchParams: URLSearchParams = new URLSearchParams({
+			app_id: "web-desktop-app-v1.0",
+			usertoken: tokenData.usertoken,
+			track_id: trackId,
+		});
+
+		const url: string = `https://apic-desktop.musixmatch.com/ws/1.1/track.richsync.get?${searchParams}`;
+
+		try {
+			this.debugLog("Musixmatch lyrics fetch URL:", url);
+
+			const res: Response = await fetch(url, {
+				// @ts-ignore
+				headers: {
+					cookie: tokenData.cookies,
+				},
+			});
+
+			if (!res.ok) {
+				this.warnLog(
+					`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Musixmatch - Word Synced Lyrics]`,
+				);
+
+				return null;
+			}
+
+			const data = await res.json();
+
+			if (
+				data?.message?.header?.status_code === 401 &&
+				data?.message?.header?.hint === "captcha"
+			) {
+				this.warnLog(
+					"The usertoken has been temporary blocked for too many requests (captcha)... [Musixmatch - Word Synced Lyrics]",
+				);
+
+				return null;
+			}
+
+			this.debugLog("Musixmatch track data:", data?.message?.body);
+
+			let lyrics = data?.message?.body?.richsync?.richsync_body;
+
+			if (!lyrics || lyrics.length <= 0) {
+				this.infoLog("Missing Lyrics [Musixmatch - Word Synced Lyrics]");
+
+				return null;
+			}
+
+			lyrics = JSON.parse(lyrics);
+
+			const parsedLyrics = lyrics.map(
+				(line: {
+					ts: number;
+					te: number;
+					x: string;
+					l: Array<{ c: string; o: number }>;
+				}) => {
+					const start = line.ts;
+					const end = line.te;
+					const lyric = line.x;
+					const syncedLyric = line.l.map((word) => ({
+						character: word.c,
+						time: word.o,
+					}));
+
+					return {
+						end,
+						lyric,
+						start,
+						syncedLyric,
+					};
+				},
+			);
+
+			this.infoLog(
+				"Successfully fetched and cached the synced lyrics [Musixmatch]",
+			);
+
+			return parsedLyrics;
+		} catch (e) {
+			this.errorLog(
+				"Something went wrong while fetching the lyrics [Musixmatch - Word Synced Lyrics]",
+				e,
+			);
+
+			return null;
+		}
+	}
+
+	private async _fetchLyricsMusixmatch(
+		metadata: Metadata,
+		tokenData: TokenData,
+		trackId: string,
+		commonTrackId: string,
+		hasLyrics: boolean,
+		hasLineSyncedLyrics: boolean,
+		hasWordSyncedLyrics: boolean,
+	) {
+		if (
+			!metadata ||
+			(!commonTrackId && !trackId) ||
+			!tokenData ||
+			(!hasLyrics && !hasLineSyncedLyrics && !hasWordSyncedLyrics)
+		)
+			return null;
+
+		const lyricsData: {
+			plain: string | null;
+			lineSynced: string | null;
+			wordSynced: Array<{
+				end: number;
+				start: number;
+				lyric: string;
+				syncedLyric: Array<{ character: string; time: number }>;
+			}> | null;
+		} = {
+			plain: null,
+			lineSynced: null,
+			wordSynced: null,
+		};
+
+		if (hasLyrics && commonTrackId)
+			lyricsData.plain = await this._fetchPlainLyricsMusixmatch(
+				tokenData,
+				commonTrackId,
+			);
+		if (hasLineSyncedLyrics && commonTrackId)
+			lyricsData.lineSynced = await this._fetchLineSyncedLyricsMusixmatch(
+				tokenData,
+				commonTrackId,
+			);
+		if (hasWordSyncedLyrics && commonTrackId)
+			lyricsData.wordSynced = await this._fetchWordSyncedLyricsMusixmatch(
+				tokenData,
+				trackId,
+			);
+
+		return lyricsData;
 	}
 
 	private async _searchLyricsNetease(metadata: Metadata) {
@@ -431,16 +703,12 @@ export class SyncLyrics {
 					`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Netease - Search]`,
 				);
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				return null;
 			}
 
 			const data = await res.json();
 
 			if (!data?.result?.songs || data?.result?.songs?.length <= 0) {
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				this.infoLog("No songs were found [Netease - Search]");
 
 				return null;
@@ -465,8 +733,6 @@ export class SyncLyrics {
 			this.debugLog("Netease search filtered track:", track);
 
 			if (!track) {
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				this.infoLog(
 					"No songs were found with the current name and artist [Netease - Search]",
 				);
@@ -480,8 +746,6 @@ export class SyncLyrics {
 
 			return trackId;
 		} catch (e) {
-			if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 			this.errorLog(
 				"Something went wrong while fetching the lyrics [Netease - Search]",
 				e,
@@ -515,8 +779,6 @@ export class SyncLyrics {
 					`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [Netease - Lyrics]`,
 				);
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				return null;
 			}
 
@@ -529,8 +791,6 @@ export class SyncLyrics {
 			if (!lyrics) {
 				this.infoLog("Missing Lyrics [Netease - Lyrics]");
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				return null;
 			}
 
@@ -540,14 +800,8 @@ export class SyncLyrics {
 				"Successfully fetched and cached the synced lyrics [Netease]",
 			);
 
-			this._lyricsSource = "Netease";
-
-			this.cache.set(this._trackId, lyrics);
-
 			return lyrics;
 		} catch (e) {
-			if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 			this.errorLog(
 				"Something went wrong while fetching the lyrics [Netease - Lyrics]",
 				e,
@@ -636,8 +890,6 @@ export class SyncLyrics {
 					`Lyrics fetch request failed with status ${res.status} (${res.statusText}) [LRCLIB]`,
 				);
 
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 				return null;
 			}
 
@@ -655,27 +907,25 @@ export class SyncLyrics {
 
 			this.debugLog("lrclib filtered track:", match);
 
-			if (!match || !match.syncedLyrics || match.syncedLyrics?.length <= 0) {
-				this.infoLog("The fetched song does not have synced lyrics [LRCLIB]");
-
-				if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
+			if (
+				!match ||
+				((!match.syncedLyrics || match.syncedLyrics?.length <= 0) &&
+					(!match.plainLyrics || match.plainLyrics?.length <= 0))
+			) {
+				this.infoLog("The fetched song does not have lyrics [LRCLIB]");
 
 				return null;
 			}
 
-			this.infoLog(
-				"Successfully fetched and cached the synced lyrics [LRCLIB]",
-			);
+			this.infoLog("Successfully fetched and cached the lyrics [LRCLIB]");
 
-			if (!this.cache.has(this._trackId))
-				this.cache.set(this._trackId, match.syncedLyrics);
-
-			this._lyricsSource = "lrclib.net";
-
-			return match.syncedLyrics;
+			return {
+				source: "lrclib.net",
+				plain: match?.plainLyrics,
+				lineSynced: match?.syncedLyrics,
+				wordSynced: null,
+			};
 		} catch (e) {
-			if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 			this.errorLog(
 				"Something went wrong while fetching the lyrics [LRCLIB]",
 				e,
@@ -698,26 +948,36 @@ export class SyncLyrics {
 			`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [Musixmatch]`,
 		);
 
-		const commonTrackId = await this._searchLyricsMusixmatch(
-			metadata,
-			tokenData,
-		);
+		const trackData = await this._searchLyricsMusixmatch(metadata, tokenData);
 
-		if (!commonTrackId) {
-			this.infoLog("Missing commontrack_id [Musixmatch - Search]");
-
-			if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
+		if (
+			!trackData ||
+			(!trackData.hasLyrics &&
+				!trackData.hasLineSyncedLyrics &&
+				!trackData.hasWordSyncedLyrics) ||
+			(!trackData.commonTrackId && !trackData.trackId)
+		) {
+			this.infoLog(
+				"Missing both commontrack_id and track_id [Musixmatch - Search]",
+			);
 
 			return null;
 		}
 
 		const lyrics = await this._fetchLyricsMusixmatch(
 			metadata,
-			commonTrackId,
 			tokenData,
+			trackData.trackId,
+			trackData.commonTrackId,
+			trackData.hasLyrics,
+			trackData.hasLineSyncedLyrics,
+			trackData.hasWordSyncedLyrics,
 		);
 
-		return lyrics;
+		return {
+			source: "Musixmatch",
+			...lyrics,
+		};
 	}
 
 	private async fetchLyricsNetease(metadata: Metadata) {
@@ -728,14 +988,17 @@ export class SyncLyrics {
 		if (!trackId) {
 			this.infoLog("Missing track ID [Netease - Search]");
 
-			if (!this.cache.has(this._trackId)) this.cache.set(this._trackId, null);
-
 			return null;
 		}
 
 		const lyrics = await this._fetchLyricsNetease(metadata, trackId);
 
-		return lyrics;
+		return {
+			source: "Netease",
+			lineSynced: lyrics,
+			plain: null,
+			wordSynced: null,
+		};
 	}
 
 	private async _getLyrics(metadata: Metadata) {
@@ -747,6 +1010,12 @@ export class SyncLyrics {
 			return null;
 		}
 
+		const sourcesTypes = {
+			musixmatch: ["plain", "line", "word"],
+			lrclib: ["plain", "line"],
+			netease: ["line"],
+		};
+
 		const avaibleSources = {
 			musixmatch: this.fetchLyricsMusixmatch,
 			lrclib: this.fetchLyricsLrclib,
@@ -755,12 +1024,48 @@ export class SyncLyrics {
 
 		let sources: Sources = this.sources || ["musixmatch", "lrclib", "netease"];
 
+		const lyricsData: {
+			plain: {
+				source: string | null | undefined;
+				lyrics: string | null | undefined;
+			};
+			lineSynced: {
+				source: string | null | undefined;
+				lyrics: string | null | undefined;
+			};
+			wordSynced: {
+				source: string | null | undefined;
+				lyrics:
+					| Array<{
+							end: number;
+							start: number;
+							lyric: string;
+							syncedLyric: Array<{ character: string; time: number }>;
+					  }>
+					| null
+					| undefined;
+			};
+		} = {
+			plain: {
+				source: null,
+				lyrics: null,
+			},
+			lineSynced: {
+				source: null,
+				lyrics: null,
+			},
+			wordSynced: {
+				source: null,
+				lyrics: null,
+			},
+		};
+
 		if (
 			sources.every((source) => !Object.keys(avaibleSources).includes(source))
 		)
 			sources = ["musixmatch", "lrclib", "netease"];
 
-		for (const source of sources) {
+		sourcesLoop: for (const source of sources) {
 			this.infoLog(`Trying to fetch the lyrics from the source "${source}"`);
 
 			if (
@@ -770,6 +1075,18 @@ export class SyncLyrics {
 				this.infoLog("Musixmatch token functions are not avaible, skipping...");
 
 				continue;
+			}
+
+			let sourceSkip = 0;
+
+			const avaibleTypes = sourcesTypes[source];
+
+			for (const type of avaibleTypes) {
+				if (type === "plain" && lyricsData.plain.lyrics) sourceSkip++;
+				if (type === "line" && lyricsData.lineSynced.lyrics) sourceSkip++;
+				if (type === "word" && lyricsData.wordSynced.lyrics) sourceSkip++;
+
+				if (sourceSkip >= avaibleTypes.length) continue sourcesLoop;
 			}
 
 			if (!Object.keys(avaibleSources).includes(source)) {
@@ -784,27 +1101,28 @@ export class SyncLyrics {
 
 			const lyrics = await avaibleSources[source](metadata);
 
-			if (lyrics) {
-				this.infoLog(`Got lyrics from the source "${source}"`);
+			if (!lyrics) continue;
 
-				this._fetching = false;
-				this._fetchingSource = null;
-				this._fetchingTrackId = null;
-
-				return lyrics;
+			if (lyrics?.plain && !lyricsData.plain.lyrics) {
+				lyricsData.plain.lyrics = lyrics.plain;
+				lyricsData.plain.source = lyrics.source;
 			}
 
-			this.infoLog(
-				`The source "${source}" doesn't have the lyrics, skipping...`,
-			);
+			if (lyrics?.lineSynced && !lyricsData.lineSynced.lyrics) {
+				lyricsData.lineSynced.lyrics = lyrics.lineSynced;
+				lyricsData.lineSynced.source = lyrics.source;
+			}
+
+			if (lyrics?.wordSynced && !lyricsData.wordSynced.lyrics) {
+				lyricsData.wordSynced.lyrics = lyrics.wordSynced;
+				lyricsData.wordSynced.source = lyrics.source;
+			}
 		}
 
-		this.infoLog("None of the sources have the lyrics");
-
-		return null;
+		return lyricsData;
 	}
 
-	public async getLyrics(metadata: Metadata) {
+	public async getLyrics(metadata: Metadata, skipCache: boolean) {
 		if (
 			!metadata?.track &&
 			!metadata?.artist &&
@@ -825,25 +1143,72 @@ export class SyncLyrics {
 				),
 			);
 
-		const hasCachedLyrics = this.cache.has(this._trackId);
+		const cachedLyrics = skipCache ? null : this.cache.get(this._trackId);
 
-		this.lyrics = hasCachedLyrics
-			? this.cache.get(this._trackId)
-			: await this._getLyrics(metadata);
+		const lyrics = cachedLyrics || (await this._getLyrics(metadata));
+
+		if (!this.cache.has(this._trackId) && !skipCache)
+			this.cache.set(
+				this._trackId,
+				lyrics || {
+					plain: {
+						lyrics: null,
+						source: null,
+					},
+					lineSynced: {
+						lyrics: null,
+						source: null,
+					},
+					wordSynced: {
+						lyrics: null,
+						source: null,
+					},
+				},
+			);
+
+		if (!lyrics)
+			return {
+				trackId: this._trackId,
+				lyrics: {
+					plain: {
+						lyrics: null,
+						source: null,
+					},
+					lineSynced: {
+						lyrics: null,
+						source: null,
+						parse: this.parseLyrics,
+					},
+					wordSynced: {
+						lyrics: null,
+						source: null,
+					},
+				},
+				track: metadata.track,
+				artist: metadata.artist,
+				album: metadata.album,
+				cached: false,
+			};
+
+		this.lyrics = lyrics.lineSynced.lyrics;
 
 		return {
 			trackId: this._trackId,
-			lyrics: this.lyrics,
+			lyrics: {
+				...lyrics,
+				lineSynced: {
+					...lyrics.lineSynced,
+					parse: this.parseLyrics,
+				},
+			},
 			track: metadata.track,
 			artist: metadata.artist,
 			album: metadata.album,
-			source: this._lyricsSource,
-			cached: hasCachedLyrics,
-			parse: this.parseLyrics,
+			cached: !!cachedLyrics,
 		};
 	}
 
-	public parseLyrics(lyrics: string | null = this.lyrics) {
+	public parseLyrics(lyrics: string | null | undefined = this.lyrics) {
 		const lyricsSplit = lyrics?.split("\n");
 
 		if (!lyricsSplit) return null;
