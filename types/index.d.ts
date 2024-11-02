@@ -1,5 +1,6 @@
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 export type LogLevel = "none" | "info" | "warn" | "error" | "debug";
+export type LyricType = Array<"plain" | "lineSynced" | "wordSynced">;
 export interface TokenData {
     cookies: string | undefined;
     usertoken: string;
@@ -11,6 +12,7 @@ export interface Metadata {
     length?: number;
     artist?: string;
     trackId?: string;
+    lyricsType?: LyricType;
 }
 export interface Cache<K, V> {
     get(key: K): V | undefined | null;

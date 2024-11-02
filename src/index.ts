@@ -11,6 +11,7 @@ const sleep = promisify(setTimeout);
  */
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 export type LogLevel = "none" | "info" | "warn" | "error" | "debug";
+export type LyricType = Array<"plain" | "lineSynced" | "wordSynced">;
 
 const logLevels = {
 	debug: 4,
@@ -42,6 +43,7 @@ export interface TokenData {
  * @property album Song's album
  * @property length Song's duration (in ms)
  * @property trackId Song's ID (returned by {@link SyncLyrics#getTrackId getTrackId})
+ * @property lyricsType An array of {@link LyricType lyric types} to fetch
  * @public
  */
 export interface Metadata {
@@ -50,6 +52,7 @@ export interface Metadata {
 	length?: number;
 	artist?: string;
 	trackId?: string;
+	lyricsType?: LyricType;
 }
 
 /**
@@ -907,6 +910,7 @@ export class SyncLyrics {
 	 * @param hasLyrics Whetever the search result specifies the song has plain lyrics
 	 * @param hasLineSyncedLyrics Whetever the search result specifies the song has line synced lyrics
 	 * @param hasWordSyncedLyrics Whetever the search result specifies the song has word synced lyrics
+	 * @param lyricsType The {@link LyricType type of lyrics} to fetch
 	 * @returns Plain, line synced and word synced lyrics when avaible
 	 */
 	private async _fetchLyricsMusixmatch(
@@ -917,6 +921,7 @@ export class SyncLyrics {
 		hasLyrics: boolean,
 		hasLineSyncedLyrics: boolean,
 		hasWordSyncedLyrics: boolean,
+		lyricsType: LyricType
 	): Promise<MusixmatchLyricsFetchResult | null> {
 		if (
 			!metadata ||
@@ -932,17 +937,17 @@ export class SyncLyrics {
 			wordSynced: null,
 		};
 
-		if (hasLyrics && commonTrackId)
+		if (hasLyrics && commonTrackId && lyricsType.includes("plain"))
 			lyricsData.plain = await this._fetchPlainLyricsMusixmatch(
 				tokenData,
 				commonTrackId,
 			);
-		if (hasLineSyncedLyrics && commonTrackId)
+		if (hasLineSyncedLyrics && commonTrackId && lyricsType.includes("lineSynced"))
 			lyricsData.lineSynced = await this._fetchLineSyncedLyricsMusixmatch(
 				tokenData,
 				commonTrackId,
 			);
-		if (hasWordSyncedLyrics && commonTrackId)
+		if (hasWordSyncedLyrics && commonTrackId && lyricsType.includes("wordSynced"))
 			lyricsData.wordSynced = await this._fetchWordSyncedLyricsMusixmatch(
 				tokenData,
 				trackId,
@@ -1156,12 +1161,15 @@ export class SyncLyrics {
 	/**
 	 * Fetches the plain and line synced lyrics from the {@link !LrcLib.net lrclib.net}'s catalogue
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param lyricsType The {@link LyricType type of lyrics} to fetch
 	 * @returns Plain and line synced lyrics from {@link !LrcLib.net lrclib.net} when avaible
 	 */
 	private async fetchLyricsLrclib(
 		metadata: Metadata,
+		lyricsType: LyricType
 	): Promise<LrcLibFetchResult | null> {
 		if (!metadata) return null;
+		if (!lyricsType.includes("plain") && !lyricsType.includes("lineSynced")) return null;
 
 		this.infoLog(
 			`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [LRCLIB]`,
@@ -1239,10 +1247,12 @@ export class SyncLyrics {
 	/**
 	 * Fetches the plain, line synced and word synced lyrics from the {@link !Musixmatch Musixmatch}'s catalogue
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param lyricsType The {@link LyricType type of lyrics} to fetch
 	 * @returns Plain, line synced and word synced lyrics from {@link !Musixmatch Musixmatch} when avaible
 	 */
 	private async fetchLyricsMusixmatch(
 		metadata: Metadata,
+		lyricsType: LyricType
 	): Promise<MusixmatchFetchResult | null> {
 		if (!metadata) return null;
 
@@ -1280,6 +1290,7 @@ export class SyncLyrics {
 			trackData.hasLyrics,
 			trackData.hasLineSyncedLyrics,
 			trackData.hasWordSyncedLyrics,
+			lyricsType
 		);
 
 		return {
@@ -1291,12 +1302,15 @@ export class SyncLyrics {
 	/**
 	 * Fetches the line synced lyrics from the {@link !Netease Netease}'s catalogue
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param lyricsType The {@link LyricType type of lyrics} to fetch
 	 * @returns Line synced lyrics from {@link !Netease Netease} when avaible
 	 */
 	private async fetchLyricsNetease(
 		metadata: Metadata,
+		lyricsType: LyricType
 	): Promise<NeteaseFetchResult | null> {
 		if (!metadata) return null;
+		if (!lyricsType.includes("lineSynced")) return null;
 
 		const trackId = await this._searchLyricsNetease(metadata);
 
@@ -1318,10 +1332,11 @@ export class SyncLyrics {
 
 	/**
 	 * Fetches the lyrics from the specified {@link Data#sources sources}
-	 * @param metadata metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param lyricsType The {@link LyricType type of lyrics} to fetch
 	 * @returns The lyrics fetched the avaible sources
 	 */
-	private async _getLyrics(metadata: Metadata): Promise<CacheLyrics> {
+	private async _getLyrics(metadata: Metadata, lyricsType: LyricType): Promise<CacheLyrics> {
 		const sourcesTypes = {
 			musixmatch: ["plain", "line", "word"],
 			lrclib: ["plain", "line"],
@@ -1394,9 +1409,9 @@ export class SyncLyrics {
 			const avaibleTypes = sourcesTypes[source];
 
 			for (const type of avaibleTypes) {
-				if (type === "plain" && lyricsData.plain.lyrics) sourceSkip++;
-				if (type === "line" && lyricsData.lineSynced.lyrics) sourceSkip++;
-				if (type === "word" && lyricsData.wordSynced.lyrics) sourceSkip++;
+				if (type === "plain" && (lyricsData.plain.lyrics || !lyricsType.includes("plain"))) sourceSkip++;
+				if (type === "line" && (lyricsData.lineSynced.lyrics || !lyricsType.includes("lineSynced"))) sourceSkip++;
+				if (type === "word" && (lyricsData.wordSynced.lyrics || !lyricsType.includes("wordSynced"))) sourceSkip++;
 
 				if (sourceSkip >= avaibleTypes.length) continue sourcesLoop;
 			}
@@ -1407,7 +1422,7 @@ export class SyncLyrics {
 				continue;
 			}
 
-			const lyrics = await avaibleSources[source](metadata);
+			const lyrics = await avaibleSources[source](metadata, lyricsType);
 
 			if (!lyrics) continue;
 
@@ -1466,14 +1481,36 @@ export class SyncLyrics {
 			btoa(
 				unescape(
 					encodeURIComponent(
-						`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`,
+						`${metadata.track || ""}----${metadata.artist || ""}----${metadata.album || ""}`,
 					),
 				),
 			);
 
+		let lyricsFetchType: LyricType = Array.isArray(metadata.lyricsType)
+			? metadata.lyricsType
+			: ["plain", "lineSynced", "wordSynced"]
+
+		if (lyricsFetchType.length <= 0) lyricsFetchType = ["plain", "lineSynced", "wordSynced"]
+
 		const cachedLyrics = skipCache ? null : this.cache.get(this._trackId);
 
-		const lyrics = cachedLyrics || (await this._getLyrics(metadata));
+		if (metadata.trackId && !cachedLyrics) {
+			const decodedId = atob(metadata.trackId)
+			const splitId = decodedId.split('----')
+
+			const track = splitId.shift() || ''
+			const artist = splitId.shift() || ''
+			const album = splitId.shift() || ''
+
+			return await this.getLyrics({
+				track,
+				artist,
+				album,
+				lyricsType: lyricsFetchType
+			})
+		}
+
+		const lyrics = cachedLyrics || (await this._getLyrics(metadata, lyricsFetchType));
 
 		if (
 			!skipCache &&
@@ -1627,7 +1664,7 @@ export class SyncLyrics {
 		return btoa(
 			unescape(
 				encodeURIComponent(
-					`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`,
+					`${metadata.track || ""}----${metadata.artist || ""}----${metadata.album || ""}`,
 				),
 			),
 		);

@@ -353,7 +353,7 @@ class SyncLyrics {
             }
         });
     }
-    _fetchLyricsMusixmatch(metadata, tokenData, trackId, commonTrackId, hasLyrics, hasLineSyncedLyrics, hasWordSyncedLyrics) {
+    _fetchLyricsMusixmatch(metadata, tokenData, trackId, commonTrackId, hasLyrics, hasLineSyncedLyrics, hasWordSyncedLyrics, lyricsType) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!metadata ||
                 (!commonTrackId && !trackId) ||
@@ -365,11 +365,11 @@ class SyncLyrics {
                 lineSynced: null,
                 wordSynced: null,
             };
-            if (hasLyrics && commonTrackId)
+            if (hasLyrics && commonTrackId && lyricsType.includes("plain"))
                 lyricsData.plain = yield this._fetchPlainLyricsMusixmatch(tokenData, commonTrackId);
-            if (hasLineSyncedLyrics && commonTrackId)
+            if (hasLineSyncedLyrics && commonTrackId && lyricsType.includes("lineSynced"))
                 lyricsData.lineSynced = yield this._fetchLineSyncedLyricsMusixmatch(tokenData, commonTrackId);
-            if (hasWordSyncedLyrics && commonTrackId)
+            if (hasWordSyncedLyrics && commonTrackId && lyricsType.includes("wordSynced"))
                 lyricsData.wordSynced = yield this._fetchWordSyncedLyricsMusixmatch(tokenData, trackId);
             return lyricsData;
         });
@@ -498,10 +498,12 @@ class SyncLyrics {
         }
         return lyrics.join("\n");
     }
-    fetchLyricsLrclib(metadata) {
+    fetchLyricsLrclib(metadata, lyricsType) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             if (!metadata)
+                return null;
+            if (!lyricsType.includes("plain") && !lyricsType.includes("lineSynced"))
                 return null;
             this.infoLog(`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [LRCLIB]`);
             const searchParams = new URLSearchParams({
@@ -550,7 +552,7 @@ class SyncLyrics {
             }
         });
     }
-    fetchLyricsMusixmatch(metadata) {
+    fetchLyricsMusixmatch(metadata, lyricsType) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!metadata)
                 return null;
@@ -568,13 +570,15 @@ class SyncLyrics {
                 this.infoLog("Missing both commontrack_id and track_id [Musixmatch - Search]");
                 return null;
             }
-            const lyrics = yield this._fetchLyricsMusixmatch(metadata, tokenData, trackData.trackId, trackData.commonTrackId, trackData.hasLyrics, trackData.hasLineSyncedLyrics, trackData.hasWordSyncedLyrics);
+            const lyrics = yield this._fetchLyricsMusixmatch(metadata, tokenData, trackData.trackId, trackData.commonTrackId, trackData.hasLyrics, trackData.hasLineSyncedLyrics, trackData.hasWordSyncedLyrics, lyricsType);
             return Object.assign({ source: "Musixmatch" }, lyrics);
         });
     }
-    fetchLyricsNetease(metadata) {
+    fetchLyricsNetease(metadata, lyricsType) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!metadata)
+                return null;
+            if (!lyricsType.includes("lineSynced"))
                 return null;
             const trackId = yield this._searchLyricsNetease(metadata);
             if (!trackId) {
@@ -590,7 +594,7 @@ class SyncLyrics {
             };
         });
     }
-    _getLyrics(metadata) {
+    _getLyrics(metadata, lyricsType) {
         return __awaiter(this, void 0, void 0, function* () {
             const sourcesTypes = {
                 musixmatch: ["plain", "line", "word"],
@@ -629,11 +633,11 @@ class SyncLyrics {
                 let sourceSkip = 0;
                 const avaibleTypes = sourcesTypes[source];
                 for (const type of avaibleTypes) {
-                    if (type === "plain" && lyricsData.plain.lyrics)
+                    if (type === "plain" && (lyricsData.plain.lyrics || !lyricsType.includes("plain")))
                         sourceSkip++;
-                    if (type === "line" && lyricsData.lineSynced.lyrics)
+                    if (type === "line" && (lyricsData.lineSynced.lyrics || !lyricsType.includes("lineSynced")))
                         sourceSkip++;
-                    if (type === "word" && lyricsData.wordSynced.lyrics)
+                    if (type === "word" && (lyricsData.wordSynced.lyrics || !lyricsType.includes("wordSynced")))
                         sourceSkip++;
                     if (sourceSkip >= avaibleTypes.length)
                         continue sourcesLoop;
@@ -642,7 +646,7 @@ class SyncLyrics {
                     this.infoLog(`The source "${source}" doesn't exist, skipping...`);
                     continue;
                 }
-                const lyrics = yield avaibleSources[source](metadata);
+                const lyrics = yield avaibleSources[source](metadata, lyricsType);
                 if (!lyrics)
                     continue;
                 if ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.plain) && !lyricsData.plain.lyrics) {
@@ -670,9 +674,27 @@ class SyncLyrics {
                 throw new Error("SyncLyrics (getlyrics): At least one of track, artist, album or trackId must be present");
             this._trackId =
                 metadata.trackId ||
-                    btoa(unescape(encodeURIComponent(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`)));
+                    btoa(unescape(encodeURIComponent(`${metadata.track || ""}----${metadata.artist || ""}----${metadata.album || ""}`)));
+            let lyricsFetchType = Array.isArray(metadata.lyricsType)
+                ? metadata.lyricsType
+                : ["plain", "lineSynced", "wordSynced"];
+            if (lyricsFetchType.length <= 0)
+                lyricsFetchType = ["plain", "lineSynced", "wordSynced"];
             const cachedLyrics = skipCache ? null : this.cache.get(this._trackId);
-            const lyrics = cachedLyrics || (yield this._getLyrics(metadata));
+            if (metadata.trackId && !cachedLyrics) {
+                const decodedId = atob(metadata.trackId);
+                const splitId = decodedId.split('----');
+                const track = splitId.shift() || '';
+                const artist = splitId.shift() || '';
+                const album = splitId.shift() || '';
+                return yield this.getLyrics({
+                    track,
+                    artist,
+                    album,
+                    lyricsType: lyricsFetchType
+                });
+            }
+            const lyrics = cachedLyrics || (yield this._getLyrics(metadata, lyricsFetchType));
             if (!skipCache &&
                 (!this.cache.has(this._trackId) ||
                     ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.plain.lyrics) && !(cachedLyrics === null || cachedLyrics === void 0 ? void 0 : cachedLyrics.plain.lyrics)) ||
@@ -767,7 +789,7 @@ class SyncLyrics {
     getTrackId(metadata) {
         if (metadata.trackId)
             return metadata.trackId;
-        return btoa(unescape(encodeURIComponent(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`)));
+        return btoa(unescape(encodeURIComponent(`${metadata.track || ""}----${metadata.artist || ""}----${metadata.album || ""}`)));
     }
     setLogLevel(logLevel) {
         if (!logLevel) {

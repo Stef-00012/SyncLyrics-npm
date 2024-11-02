@@ -12,12 +12,31 @@ const LyricsManager = new SyncLyrics({
     },
 })
 
-setInterval(async () => {
-    const l = await LyricsManager.getLyrics({
-        track: "drunk text",
-        artist: "Henry Moodie",
-        album: "in all of my lonely nights"
-    })
+// const trackId = LyricsManager.getTrackId({
+//     /* Each of those options is optional but atleast one is required excluded length */
+//     track: "drunk text", // Song name
+//     artist: "Henry Moodie", // Song artist
+//     album: "in all of my lonely nights", // Song album
+//     length: 175000, // Song duration, in ms
+// })
+
+LyricsManager.getLyrics({
+    /* Each of those options is optional but atleast one is required excluded length */
+    track: "drunk text", // Song name
+    artist: "Henry Moodie", // Song artist
+    album: "in all of my lonely nights", // Song album
+    length: 175000, // Song duration, in ms
+    lyricsType: []
+}).then(data => {
+    console.log(data.lyrics)
+})
+
+// setInterval(async () => {
+//     const l = await LyricsManager.getLyrics({
+//         track: "drunk text",
+//         artist: "Henry Moodie",
+//         album: "in all of my lonely nights"
+//     })
     
-    console.log(l)
-}, 500)
+//     console.log(l)
+// }, 500)
