@@ -655,7 +655,11 @@ class SyncLyrics {
                     btoa(unescape(encodeURIComponent(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`)));
             const cachedLyrics = skipCache ? null : this.cache.get(this._trackId);
             const lyrics = cachedLyrics || (yield this._getLyrics(metadata));
-            if (!skipCache && (!this.cache.has(this._trackId) || ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.plain.lyrics) && !(cachedLyrics === null || cachedLyrics === void 0 ? void 0 : cachedLyrics.plain.lyrics)) || ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.lineSynced.lyrics) && !(cachedLyrics === null || cachedLyrics === void 0 ? void 0 : cachedLyrics.lineSynced.lyrics)) || ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.wordSynced.lyrics) && !(cachedLyrics === null || cachedLyrics === void 0 ? void 0 : cachedLyrics.wordSynced.lyrics))))
+            if (!skipCache &&
+                (!this.cache.has(this._trackId) ||
+                    ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.plain.lyrics) && !(cachedLyrics === null || cachedLyrics === void 0 ? void 0 : cachedLyrics.plain.lyrics)) ||
+                    ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.lineSynced.lyrics) && !(cachedLyrics === null || cachedLyrics === void 0 ? void 0 : cachedLyrics.lineSynced.lyrics)) ||
+                    ((lyrics === null || lyrics === void 0 ? void 0 : lyrics.wordSynced.lyrics) && !(cachedLyrics === null || cachedLyrics === void 0 ? void 0 : cachedLyrics.wordSynced.lyrics))))
                 this.cache.set(this._trackId, lyrics || {
                     plain: {
                         lyrics: null,

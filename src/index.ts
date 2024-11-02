@@ -8,7 +8,7 @@ const sleep = promisify(setTimeout);
  * - {@link !LrcLib.net LrcLib.net}
  * - {@link !Netease Netease}
  * @public
-*/
+ */
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 
 const logLevels = {
@@ -26,7 +26,7 @@ const logLevels = {
  * @property cookies Cookies used for the {@link !Musixmatch Musixmatch}'s API request
  * @property expiresAt When the {@link !Musixmatch Musixmatch}'s {@link TokenData#usertoken usertoken} expires
  * @private
-*/
+ */
 export interface TokenData {
 	cookies: string | undefined;
 	usertoken: string;
@@ -82,17 +82,14 @@ export interface Data {
 	sources?: Sources;
 	cache?: Cache<
 		string | null | undefined,
-		| CacheLyrics
-		| null
-		| undefined
-		| null
+		CacheLyrics | null | undefined | null
 	>;
 	saveMusixmatchToken?: (tokenData: TokenData) => void;
 	getMusixmatchToken?: () => TokenData | null | undefined;
 }
 
 /**
- * @interface 
+ * @interface
  * @property time When the lyric starts
  * @property text Lyric's text
  * @public
@@ -211,12 +208,12 @@ export interface CacheLyrics {
  * @public
  */
 export interface LyricsOutput {
-    artist: string | undefined;
-    track: string | undefined;
-    album: string | undefined;
-    trackId: string;
-    cached: boolean;
-    lyrics: Lyrics;
+	artist: string | undefined;
+	track: string | undefined;
+	album: string | undefined;
+	trackId: string;
+	cached: boolean;
+	lyrics: Lyrics;
 }
 
 /**
@@ -230,9 +227,9 @@ export interface LyricsOutput {
  */
 export interface MusixmatchSearchResult {
 	hasLineSyncedLyrics: boolean;
-    hasWordSyncedLyrics: boolean;
-    commonTrackId: string;
-    hasLyrics: boolean;
+	hasWordSyncedLyrics: boolean;
+	commonTrackId: string;
+	hasLyrics: boolean;
 	trackId: string;
 }
 
@@ -244,9 +241,9 @@ export interface MusixmatchSearchResult {
  * @private
  */
 export interface MusixmatchLyricsFetchResult {
-    wordSynced: Array<WordSyncedLyrics> | null;
+	wordSynced: Array<WordSyncedLyrics> | null;
 	lineSynced: string | null;
-    plain: string | null;
+	plain: string | null;
 }
 
 /**
@@ -258,9 +255,9 @@ export interface MusixmatchLyricsFetchResult {
  * @private
  */
 export interface MusixmatchFetchResult {
-    wordSynced?: Array<WordSyncedLyrics> | null;
-    lineSynced?: string | null;
-    plain?: string | null;
+	wordSynced?: Array<WordSyncedLyrics> | null;
+	lineSynced?: string | null;
+	plain?: string | null;
 	source: "Musixmatch";
 }
 
@@ -273,10 +270,10 @@ export interface MusixmatchFetchResult {
  * @private
  */
 export interface LrcLibFetchResult {
-    lineSynced: string | null;
-    plain: string | null;
-    source: "lrclib.net";
-    wordSynced: null;
+	lineSynced: string | null;
+	plain: string | null;
+	source: "lrclib.net";
+	wordSynced: null;
 }
 
 /**
@@ -288,10 +285,10 @@ export interface LrcLibFetchResult {
  * @private
  */
 export interface NeteaseFetchResult {
-    lineSynced: string | null;
-    source: "Netease";
-    wordSynced: null;
-    plain: null;
+	lineSynced: string | null;
+	source: "Netease";
+	wordSynced: null;
+	plain: null;
 }
 
 /**
@@ -309,34 +306,31 @@ export class SyncLyrics {
 	public instrumentalLyricsIndicator: string;
 	public sources: Sources;
 	public cache: Cache<
-	string | null | undefined,
-	| CacheLyrics
+		string | null | undefined,
+		CacheLyrics | null | undefined | null
+	>;
+	public saveMusixmatchToken:
 		| null
 		| undefined
-		| null
-		>;
-	public saveMusixmatchToken:
-	| null
-	| undefined
-	| ((tokenData: TokenData) => void | Promise<void>);
+		| ((tokenData: TokenData) => void | Promise<void>);
 	public getMusixmatchToken:
-	| null
-	| undefined
-	| (() =>
-		| TokenData
-	| Promise<TokenData | null | undefined>
-	| null
-	| undefined);
-	
+		| null
+		| undefined
+		| (() =>
+				| TokenData
+				| Promise<TokenData | null | undefined>
+				| null
+				| undefined);
+
 	private lyrics: string | null | undefined;
 	private _trackId: string | null;
 
 	/**
 	 * @param data The lyrics manager configuration
-	 * @example 
+	 * @example
 	 * ```js
 	 * let mxmToken;
-	 * 
+	 *
 	 * const LyricsManager = new SyncLyrics({
 	 *     cache: new Map(), // Anything that can store data and has a .set(K, V), .get(K) and .has(K) values
 	 *     logLevel: 'none', // One of "none" | "info" | "warn" | "error" | "debug"
@@ -924,7 +918,9 @@ export class SyncLyrics {
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
 	 * @returns If found, the {@link !Netease Netease} track's ID
 	 */
-	private async _searchLyricsNetease(metadata: Metadata): Promise<string | null> {
+	private async _searchLyricsNetease(
+		metadata: Metadata,
+	): Promise<string | null> {
 		// @ts-ignore
 		const searchParams: URLSearchParams = new URLSearchParams({
 			limit: 10,
@@ -1007,7 +1003,10 @@ export class SyncLyrics {
 	 * @param trackId The {@link !Netease Netease} track's ID
 	 * @returns The track's line synced lyrics if avaible
 	 */
-	private async _fetchLyricsNetease(metadata: Metadata, trackId: string): Promise<string | null> {
+	private async _fetchLyricsNetease(
+		metadata: Metadata,
+		trackId: string,
+	): Promise<string | null> {
 		if (!metadata || !trackId) return null;
 
 		const searchParams: URLSearchParams = new URLSearchParams({
@@ -1121,7 +1120,9 @@ export class SyncLyrics {
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
 	 * @returns Plain and line synced lyrics from {@link !LrcLib.net lrclib.net} when avaible
 	 */
-	private async fetchLyricsLrclib(metadata: Metadata): Promise<LrcLibFetchResult | null> {
+	private async fetchLyricsLrclib(
+		metadata: Metadata,
+	): Promise<LrcLibFetchResult | null> {
 		if (!metadata) return null;
 
 		this.infoLog(
@@ -1202,7 +1203,9 @@ export class SyncLyrics {
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
 	 * @returns Plain, line synced and word synced lyrics from {@link !Musixmatch Musixmatch} when avaible
 	 */
-	private async fetchLyricsMusixmatch(metadata: Metadata): Promise<MusixmatchFetchResult | null> {
+	private async fetchLyricsMusixmatch(
+		metadata: Metadata,
+	): Promise<MusixmatchFetchResult | null> {
 		if (!metadata) return null;
 
 		const tokenData = await this.getMusixmatchUsertoken();
@@ -1252,7 +1255,9 @@ export class SyncLyrics {
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
 	 * @returns Line synced lyrics from {@link !Netease Netease} when avaible
 	 */
-	private async fetchLyricsNetease(metadata: Metadata): Promise<NeteaseFetchResult | null> {
+	private async fetchLyricsNetease(
+		metadata: Metadata,
+	): Promise<NeteaseFetchResult | null> {
 		if (!metadata) return null;
 
 		const trackId = await this._searchLyricsNetease(metadata);
@@ -1392,10 +1397,10 @@ export class SyncLyrics {
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album}, {@link Metadata#length duration} or {@link Metadata#trackId ID}
 	 * @param skipCache Whetever skip cache check or not
 	 * @returns The lyrics of the song when avaible
-	 * @example 
+	 * @example
 	 * ```js
 	 * const LyricsManager = new SyncLyrics()
-	 * 
+	 *
 	 * LyricsManager.getLyrics({
 	 *     track: "the old me", // Song name
 	 *     artist: "Henry Moodie", // Song artist
@@ -1404,7 +1409,10 @@ export class SyncLyrics {
 	 * }).then(console.log)
 	 * ```
 	 */
-	public async getLyrics(metadata: Metadata, skipCache?: boolean): Promise<LyricsOutput> {
+	public async getLyrics(
+		metadata: Metadata,
+		skipCache?: boolean,
+	): Promise<LyricsOutput> {
 		if (
 			!metadata?.track &&
 			!metadata?.artist &&
@@ -1429,7 +1437,13 @@ export class SyncLyrics {
 
 		const lyrics = cachedLyrics || (await this._getLyrics(metadata));
 
-		if (!skipCache && (!this.cache.has(this._trackId) || (lyrics?.plain.lyrics && !cachedLyrics?.plain.lyrics) || (lyrics?.lineSynced.lyrics && !cachedLyrics?.lineSynced.lyrics) || (lyrics?.wordSynced.lyrics && !cachedLyrics?.wordSynced.lyrics)))
+		if (
+			!skipCache &&
+			(!this.cache.has(this._trackId) ||
+				(lyrics?.plain.lyrics && !cachedLyrics?.plain.lyrics) ||
+				(lyrics?.lineSynced.lyrics && !cachedLyrics?.lineSynced.lyrics) ||
+				(lyrics?.wordSynced.lyrics && !cachedLyrics?.wordSynced.lyrics))
+		)
 			this.cache.set(
 				this._trackId,
 				lyrics || {
@@ -1495,7 +1509,9 @@ export class SyncLyrics {
 	 * @param lyrics The lineSynced lyrics (or any string in the {@link !LRC_file_format LRC}) returned by {@link SyncLyrics#getLyrics getLyrics}
 	 * @returns The lyrics as an {@link FormattedLyric array of time and text}
 	 */
-	public parseLyrics(lyrics: string | null | undefined = this.lyrics): Array<FormattedLyric> | null {
+	public parseLyrics(
+		lyrics: string | null | undefined = this.lyrics,
+	): Array<FormattedLyric> | null {
 		const lyricsSplit = lyrics?.split("\n");
 
 		if (!lyricsSplit) return null;
@@ -1558,7 +1574,7 @@ export class SyncLyrics {
 	 * @example
 	 * ```js
 	 * const LyricsManager = new SyncLyrics()
-	 * 
+	 *
 	 * LyricsManager.getTrackId({
 	 *     track: "the old me", // Song name
 	 *     artist: "Henry Moodie", // Song artist
