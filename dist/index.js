@@ -22,14 +22,32 @@ const logLevels = {
 };
 class SyncLyrics {
     constructor(data) {
+        if (typeof (data === null || data === void 0 ? void 0 : data.logLevel) === "string" &&
+            !Object.keys(logLevels).includes(data.logLevel))
+            throw new Error(`SyncLyrics: logLevel must be one of "${Object.keys(logLevels).join('" | "')}"`);
+        if ((data === null || data === void 0 ? void 0 : data.instrumentalLyricsIndicator) &&
+            typeof data.instrumentalLyricsIndicator !== "string")
+            throw new Error("SyncLyrics: instrumentalLyricsIndicator must be a string");
+        if ((data === null || data === void 0 ? void 0 : data.sources) &&
+            (!Array.isArray(data.sources) || data.sources.length <= 0))
+            throw new Error('SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"');
+        if ((data === null || data === void 0 ? void 0 : data.cache) &&
+            (typeof data.cache.get !== "function" ||
+                typeof data.cache.set !== "function" ||
+                typeof data.cache.has !== "function"))
+            throw new Error("SyncLyrics: cache must have .get, .set and .has methods");
+        if ((data === null || data === void 0 ? void 0 : data.saveMusixmatchToken) &&
+            typeof data.saveMusixmatchToken !== "function")
+            throw new Error("SyncLyrics: saveMusixmatchToken must be a function");
+        if ((data === null || data === void 0 ? void 0 : data.getMusixmatchToken) &&
+            typeof data.getMusixmatchToken !== "function")
+            throw new Error("SyncLyrics: getMusixmatchToken must be a function");
         this.logLevel = (data === null || data === void 0 ? void 0 : data.logLevel) || "none";
         this.instrumentalLyricsIndicator = (data === null || data === void 0 ? void 0 : data.instrumentalLyricsIndicator) || "";
         this.sources = (data === null || data === void 0 ? void 0 : data.sources) || ["musixmatch", "lrclib", "netease"];
         this.cache = (data === null || data === void 0 ? void 0 : data.cache) || new Map();
         this.saveMusixmatchToken = data === null || data === void 0 ? void 0 : data.saveMusixmatchToken;
         this.getMusixmatchToken = data === null || data === void 0 ? void 0 : data.getMusixmatchToken;
-        if (this.sources.length <= 0)
-            throw new Error("SyncLyrics: You must provide atleast one source");
         this.lyrics = null;
         this._trackId = null;
         this._fetchLineSyncedLyricsMusixmatch =
@@ -750,6 +768,60 @@ class SyncLyrics {
         if (metadata.trackId)
             return metadata.trackId;
         return btoa(unescape(encodeURIComponent(`${metadata.track || ""}-${metadata.artist || ""}-${metadata.album || ""}`)));
+    }
+    setLogLevel(logLevel) {
+        if (!logLevel) {
+            this.logLevel = "none";
+            return this;
+        }
+        if (!Object.keys(logLevel).includes(logLevel))
+            throw new Error(`SyncLyrics: logLevel must be one of "${Object.keys(logLevel).join('" | "')}"`);
+        this.logLevel = logLevel;
+        return this;
+    }
+    setInstrumentalLyricsIndicator(instrumentalLyricsIndicator) {
+        if (!instrumentalLyricsIndicator) {
+            this.instrumentalLyricsIndicator = "";
+            return this;
+        }
+        if (typeof instrumentalLyricsIndicator !== "string")
+            throw new Error("SyncLyrics: instrumentalLyricsIndicator must be a string");
+        this.instrumentalLyricsIndicator = instrumentalLyricsIndicator;
+        return this;
+    }
+    setSources(sources) {
+        if (!sources) {
+            this.sources = ["musixmatch", "lrclib", "netease"];
+            return this;
+        }
+        if (!Array.isArray(sources) || sources.length <= 0)
+            throw new Error('SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"');
+        this.sources = sources;
+        return this;
+    }
+    setCache(cache) {
+        if (!cache) {
+            this.cache = new Map();
+            return this;
+        }
+        if (typeof cache.get !== "function" ||
+            typeof cache.set !== "function" ||
+            typeof cache.has !== "function")
+            throw new Error("SyncLyrics: cache must have .get, .set and .has methods");
+        this.cache = cache;
+        return this;
+    }
+    setSaveMusixmatchToken(saveMusixmatchToken) {
+        if (typeof saveMusixmatchToken !== "function")
+            throw new Error("SyncLyrics: saveMusixmatchToken must be a function");
+        this.saveMusixmatchToken = saveMusixmatchToken;
+        return this;
+    }
+    setGetMusixmatchToken(getMusixmatchToken) {
+        if (typeof getMusixmatchToken !== "function")
+            throw new Error("SyncLyrics: getMusixmatchToken must be a function");
+        this.getMusixmatchToken = getMusixmatchToken;
+        return this;
     }
     warnLog(...args) {
         if ((logLevels[this.logLevel] || 0) < logLevels.warn)

@@ -10,6 +10,7 @@ const sleep = promisify(setTimeout);
  * @public
  */
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
+export type LogLevel = "none" | "info" | "warn" | "error" | "debug";
 
 const logLevels = {
 	debug: 4,
@@ -77,7 +78,7 @@ export interface Cache<K, V> {
  * @public
  */
 export interface Data {
-	logLevel?: "none" | "info" | "warn" | "error" | "debug";
+	logLevel?: LogLevel;
 	instrumentalLyricsIndicator?: string;
 	sources?: Sources;
 	cache?: Cache<
@@ -302,7 +303,7 @@ export interface NeteaseFetchResult {
  * @property lyrics The fetched lyrics, used for the {@link LineSyncedLyricsData#parse .parse()} method in the {@link LineSyncedLyricsData}
  */
 export class SyncLyrics {
-	public logLevel: "none" | "info" | "warn" | "error" | "debug";
+	public logLevel: LogLevel;
 	public instrumentalLyricsIndicator: string;
 	public sources: Sources;
 	public cache: Cache<
@@ -346,6 +347,47 @@ export class SyncLyrics {
 	 * ```
 	 */
 	constructor(data?: Data) {
+		if (
+			typeof data?.logLevel === "string" &&
+			!Object.keys(logLevels).includes(data.logLevel)
+		)
+			throw new Error(
+				`SyncLyrics: logLevel must be one of "${Object.keys(logLevels).join('" | "')}"`,
+			);
+		if (
+			data?.instrumentalLyricsIndicator &&
+			typeof data.instrumentalLyricsIndicator !== "string"
+		)
+			throw new Error(
+				"SyncLyrics: instrumentalLyricsIndicator must be a string",
+			);
+		if (
+			data?.sources &&
+			(!Array.isArray(data.sources) || data.sources.length <= 0)
+		)
+			throw new Error(
+				'SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"',
+			);
+		if (
+			data?.cache &&
+			(typeof data.cache.get !== "function" ||
+				typeof data.cache.set !== "function" ||
+				typeof data.cache.has !== "function")
+		)
+			throw new Error(
+				"SyncLyrics: cache must have .get, .set and .has methods",
+			);
+		if (
+			data?.saveMusixmatchToken &&
+			typeof data.saveMusixmatchToken !== "function"
+		)
+			throw new Error("SyncLyrics: saveMusixmatchToken must be a function");
+		if (
+			data?.getMusixmatchToken &&
+			typeof data.getMusixmatchToken !== "function"
+		)
+			throw new Error("SyncLyrics: getMusixmatchToken must be a function");
+
 		this.logLevel = data?.logLevel || "none";
 		this.instrumentalLyricsIndicator = data?.instrumentalLyricsIndicator || "";
 		this.sources = data?.sources || ["musixmatch", "lrclib", "netease"];
@@ -353,11 +395,7 @@ export class SyncLyrics {
 		this.saveMusixmatchToken = data?.saveMusixmatchToken;
 		this.getMusixmatchToken = data?.getMusixmatchToken;
 
-		if (this.sources.length <= 0)
-			throw new Error("SyncLyrics: You must provide atleast one source");
-
 		this.lyrics = null;
-
 		this._trackId = null;
 
 		this._fetchLineSyncedLyricsMusixmatch =
@@ -1593,6 +1631,137 @@ export class SyncLyrics {
 				),
 			),
 		);
+	}
+
+	/**
+	 * Updates or resets the log level
+	 * @param logLevel The new {@link Data#logLevel logLevel}
+	 * @returns Updated {@link SyncLyrics} instance
+	 */
+	public setLogLevel(logLevel?: LogLevel): this {
+		if (!logLevel) {
+			this.logLevel = "none";
+
+			return this;
+		}
+
+		if (!Object.keys(logLevel).includes(logLevel))
+			throw new Error(
+				`SyncLyrics: logLevel must be one of "${Object.keys(logLevel).join('" | "')}"`,
+			);
+
+		this.logLevel = logLevel;
+
+		return this;
+	}
+
+	/**
+	 * Updates or resets the instrumental lyrics indicator (character used when there are more than 3 seconds of music without lyrics)
+	 * @param instrumentalLyricsIndicator The new {@link Data#instrumentalLyricsIndicator instrumentalLyricsIndicator}
+	 * @returns Updated {@link SyncLyrics} instance
+	 */
+	public setInstrumentalLyricsIndicator(
+		instrumentalLyricsIndicator?: string,
+	): this {
+		if (!instrumentalLyricsIndicator) {
+			this.instrumentalLyricsIndicator = "";
+
+			return this;
+		}
+
+		if (typeof instrumentalLyricsIndicator !== "string")
+			throw new Error(
+				"SyncLyrics: instrumentalLyricsIndicator must be a string",
+			);
+
+		this.instrumentalLyricsIndicator = instrumentalLyricsIndicator;
+
+		return this;
+	}
+
+	/**
+	 * Updates or resets the sources
+	 * @param sources The new {@link Data#sources sources}
+	 * @returns Updated {@link SyncLyrics} instance
+	 */
+	public setSources(sources?: Sources): this {
+		if (!sources) {
+			this.sources = ["musixmatch", "lrclib", "netease"];
+
+			return this;
+		}
+
+		if (!Array.isArray(sources) || sources.length <= 0)
+			throw new Error(
+				'SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"',
+			);
+
+		this.sources = sources;
+
+		return this;
+	}
+
+	/**
+	 * Updates or resets the cache
+	 * @param cache The new {@link Data#cache cache}
+	 * @returns Updated {@link SyncLyrics} instance
+	 */
+	public setCache(
+		cache?: Cache<
+			string | null | undefined,
+			CacheLyrics | null | undefined | null
+		>,
+	): this {
+		if (!cache) {
+			this.cache = new Map();
+
+			return this;
+		}
+
+		if (
+			typeof cache.get !== "function" ||
+			typeof cache.set !== "function" ||
+			typeof cache.has !== "function"
+		)
+			throw new Error(
+				"SyncLyrics: cache must have .get, .set and .has methods",
+			);
+
+		this.cache = cache;
+
+		return this;
+	}
+
+	/**
+	 * Updates or removes the saveMusixmatchToken function
+	 * @param saveMusixmatchToken The new {@link Data#saveMusixmatchToken saveMusixmatchToken} function
+	 * @returns Updated {@link SyncLyrics} instance
+	 */
+	public setSaveMusixmatchToken(
+		saveMusixmatchToken?: (tokenData: TokenData) => void | Promise<void>,
+	): this {
+		if (typeof saveMusixmatchToken !== "function")
+			throw new Error("SyncLyrics: saveMusixmatchToken must be a function");
+
+		this.saveMusixmatchToken = saveMusixmatchToken;
+
+		return this;
+	}
+
+	/**
+	 * Updates or removes the getMusixmatchToken function
+	 * @param getMusixmatchToken The new {@link Data#getMusixmatchToken getMusixmatchToken} function
+	 * @returns Updated {@link SyncLyrics} instance
+	 */
+	public setGetMusixmatchToken(
+		getMusixmatchToken?: () => TokenData | Promise<TokenData>,
+	): this {
+		if (typeof getMusixmatchToken !== "function")
+			throw new Error("SyncLyrics: getMusixmatchToken must be a function");
+
+		this.getMusixmatchToken = getMusixmatchToken;
+
+		return this;
 	}
 
 	/**

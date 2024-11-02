@@ -1,4 +1,5 @@
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
+export type LogLevel = "none" | "info" | "warn" | "error" | "debug";
 export interface TokenData {
     cookies: string | undefined;
     usertoken: string;
@@ -18,7 +19,7 @@ export interface Cache<K, V> {
     [key: string]: any;
 }
 export interface Data {
-    logLevel?: "none" | "info" | "warn" | "error" | "debug";
+    logLevel?: LogLevel;
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
     cache?: Cache<string | null | undefined, CacheLyrics | null | undefined | null>;
@@ -105,7 +106,7 @@ export interface NeteaseFetchResult {
     plain: null;
 }
 export declare class SyncLyrics {
-    logLevel: "none" | "info" | "warn" | "error" | "debug";
+    logLevel: LogLevel;
     instrumentalLyricsIndicator: string;
     sources: Sources;
     cache: Cache<string | null | undefined, CacheLyrics | null | undefined | null>;
@@ -130,6 +131,12 @@ export declare class SyncLyrics {
     getLyrics(metadata: Metadata, skipCache?: boolean): Promise<LyricsOutput>;
     parseLyrics(lyrics?: string | null | undefined): Array<FormattedLyric> | null;
     getTrackId(metadata: Metadata): string;
+    setLogLevel(logLevel?: LogLevel): this;
+    setInstrumentalLyricsIndicator(instrumentalLyricsIndicator?: string): this;
+    setSources(sources?: Sources): this;
+    setCache(cache?: Cache<string | null | undefined, CacheLyrics | null | undefined | null>): this;
+    setSaveMusixmatchToken(saveMusixmatchToken?: (tokenData: TokenData) => void | Promise<void>): this;
+    setGetMusixmatchToken(getMusixmatchToken?: () => TokenData | Promise<TokenData>): this;
     private warnLog;
     private debugLog;
     private errorLog;

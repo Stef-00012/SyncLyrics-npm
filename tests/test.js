@@ -25,6 +25,62 @@ describe("Invalid methods", () => {
 			"SyncLyrics (getlyrics): At least one of track, artist, album or trackId must be present",
 		));
 	});
+
+	it("Should error because the .setLogLevel() method has an invalid log level", async ({
+		assert,
+	}) => {
+		assert.throws(() => {
+			LyricsManager.setLogLevel('test');
+		}, Error);
+	});
+
+	it("Should error because the .setInstrumentalLyricsIndicator() method is not a string", async ({
+		assert,
+	}) => {
+		assert.throws(() => {
+			LyricsManager.setInstrumentalLyricsIndicator(() => {});
+		}, new Error("SyncLyrics: instrumentalLyricsIndicator must be a string"));
+	});
+
+	it("Should error because the .setSources() method is not an array", async ({
+		assert,
+	}) => {
+		assert.throws(() => {
+			LyricsManager.setSources('test');
+		}, new Error('SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"'));
+	});
+
+	it("Should error because the .setSources() method is an empty array", async ({
+		assert,
+	}) => {
+		assert.throws(() => {
+			LyricsManager.setSources([]);
+		}, new Error('SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"'));
+	});
+
+	it("Should error because the .setCache() method does not have .get(), .set() and .has() methods", async ({
+		assert,
+	}) => {
+		assert.throws(() => {
+			LyricsManager.setCache({});
+		}, new Error('SyncLyrics: cache must have .get, .set and .has methods'));
+	});
+
+	it("Should error because the .setSaveMusixmatchToken() method is not a function", async ({
+		assert,
+	}) => {
+		assert.throws(() => {
+			LyricsManager.setSaveMusixmatchToken({});
+		}, new Error('SyncLyrics: saveMusixmatchToken must be a function'));
+	});
+
+	it("Should error because the .setGetMusixmatchToken() method is not a function", async ({
+		assert,
+	}) => {
+		assert.throws(() => {
+			LyricsManager.setGetMusixmatchToken({});
+		}, new Error('SyncLyrics: getMusixmatchToken must be a function'));
+	});
 });
 
 describe("Valid methods", () => {
@@ -156,13 +212,49 @@ describe("Cache [default method]", () => {
 		assert.strictEqual(data.cached, true);
 	});
 
-	it("Should not be cached [good old days]", async ({ assert }) => {
+	it("Should not be cached [good old days] - skip cache check", async ({
+		assert,
+	}) => {
+		const data = await LyricsManager.getLyrics(
+			{
+				track: "good old days",
+				artist: "Henry Moodie",
+			},
+			true,
+		);
+
+		assert.strictEqual(data.cached, false);
+	});
+
+	it("Should be cached [good old days]", async ({ assert }) => {
 		const data = await LyricsManager.getLyrics({
 			track: "good old days",
 			artist: "Henry Moodie",
-		}, true);
+		});
+
+		assert.strictEqual(data.cached, true);
+	});
+
+	it("Should not be cached [good old days] - reste cache with .setCache()", async ({
+		assert,
+	}) => {
+		LyricsManager.setCache();
+
+		const data = await LyricsManager.getLyrics({
+			track: "good old days",
+			artist: "Henry Moodie",
+		});
 
 		assert.strictEqual(data.cached, false);
+	});
+
+	it("Should be cached [good old days]", async ({ assert }) => {
+		const data = await LyricsManager.getLyrics({
+			track: "good old days",
+			artist: "Henry Moodie",
+		});
+
+		assert.strictEqual(data.cached, true);
 	});
 });
 
