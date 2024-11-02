@@ -304,6 +304,7 @@ export interface NeteaseFetchResult {
  * @property getMusixmatchToken Function used to fetch the {@link !Musixmatch Musixmatch} token (required to fetch the lyrics data from {@link !Musixmatch Musixmatch})
  * @property _trackId Used for the logging within the different functions and to fetch the track's data from the {@link SyncLyrics#cache cache} if avaible
  * @property lyrics The fetched lyrics, used for the {@link LineSyncedLyricsData#parse .parse()} method in the {@link LineSyncedLyricsData}
+ * @property _fetching Whetever it is fetching a song currently
  */
 export class SyncLyrics {
 	public logLevel: LogLevel;
@@ -328,6 +329,7 @@ export class SyncLyrics {
 
 	private lyrics: string | null | undefined;
 	private _trackId: string | null;
+	private _fetching: boolean;
 
 	/**
 	 * @param data The lyrics manager configuration
@@ -400,6 +402,7 @@ export class SyncLyrics {
 
 		this.lyrics = null;
 		this._trackId = null;
+		this._fetching = false;
 
 		this._fetchLineSyncedLyricsMusixmatch =
 			this._fetchLineSyncedLyricsMusixmatch.bind(this);
@@ -1387,6 +1390,10 @@ export class SyncLyrics {
 			},
 		};
 
+		if (this._fetching) return lyricsData;
+
+		this._fetching = true;
+
 		if (
 			sources.every((source) => !Object.keys(avaibleSources).includes(source))
 		)
@@ -1441,6 +1448,8 @@ export class SyncLyrics {
 				lyricsData.wordSynced.source = lyrics.source;
 			}
 		}
+
+		this._fetching = false;
 
 		return lyricsData;
 	}

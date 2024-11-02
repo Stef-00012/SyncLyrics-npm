@@ -116,6 +116,7 @@ export declare class SyncLyrics {
     getMusixmatchToken: null | undefined | (() => TokenData | Promise<TokenData | null | undefined> | null | undefined);
     private lyrics;
     private _trackId;
+    private _fetching;
     constructor(data?: Data);
     private getMusixmatchUsertoken;
     private _searchLyricsMusixmatch;

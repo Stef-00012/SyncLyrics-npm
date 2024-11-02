@@ -50,6 +50,7 @@ class SyncLyrics {
         this.getMusixmatchToken = data === null || data === void 0 ? void 0 : data.getMusixmatchToken;
         this.lyrics = null;
         this._trackId = null;
+        this._fetching = false;
         this._fetchLineSyncedLyricsMusixmatch =
             this._fetchLineSyncedLyricsMusixmatch.bind(this);
         this._fetchWordSyncedLyricsMusixmatch =
@@ -621,6 +622,9 @@ class SyncLyrics {
                     lyrics: null,
                 },
             };
+            if (this._fetching)
+                return lyricsData;
+            this._fetching = true;
             if (sources.every((source) => !Object.keys(avaibleSources).includes(source)))
                 sources = ["musixmatch", "lrclib", "netease"];
             sourcesLoop: for (const source of sources) {
@@ -662,6 +666,7 @@ class SyncLyrics {
                     lyricsData.wordSynced.source = lyrics.source;
                 }
             }
+            this._fetching = false;
             return lyricsData;
         });
     }
