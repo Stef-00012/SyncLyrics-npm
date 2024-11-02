@@ -69,7 +69,7 @@ LyricsManager.getLyrics({
         lineSynced: {
             source: "Musixmatch",
             lyrics: "[00:00.14] Fifth of November, when I walked you home\n[00:08.06] That's when I nearly said it, but then said, \"Forget it,\" and froze\n ..... (rest of the lyrics)",
-            parse: [Function (parseLyrics)] // see #Example Parse Output
+            parse: [Function: bound parseLyrics] // see #Example Parse Output
         },
         wordSynced: {
             source: "Musixmatch",
