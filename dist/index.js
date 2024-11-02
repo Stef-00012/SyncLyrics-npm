@@ -31,9 +31,6 @@ class SyncLyrics {
         if (this.sources.length <= 0)
             throw new Error("SyncLyrics: You must provide atleast one source");
         this.lyrics = null;
-        this._fetching = false;
-        this._fetchingTrackId = null;
-        this._fetchingSource = null;
         this._trackId = null;
         this._fetchLineSyncedLyricsMusixmatch =
             this._fetchLineSyncedLyricsMusixmatch.bind(this);
@@ -487,7 +484,7 @@ class SyncLyrics {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             if (!metadata)
-                return;
+                return null;
             this.infoLog(`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [LRCLIB]`);
             const searchParams = new URLSearchParams({
                 track_name: metadata.track,
@@ -538,7 +535,7 @@ class SyncLyrics {
     fetchLyricsMusixmatch(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!metadata)
-                return;
+                return null;
             const tokenData = yield this.getMusixmatchUsertoken();
             this.debugLog("Musixmatch token data:", tokenData);
             if (!tokenData)
@@ -560,7 +557,7 @@ class SyncLyrics {
     fetchLyricsNetease(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!metadata)
-                return;
+                return null;
             const trackId = yield this._searchLyricsNetease(metadata);
             if (!trackId) {
                 this.infoLog("Missing track ID [Netease - Search]");
@@ -577,10 +574,6 @@ class SyncLyrics {
     }
     _getLyrics(metadata) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this._fetching && this._fetchingTrackId === this._trackId) {
-                this.warnLog(`Already fetching from the source "${this._fetchingSource}" (Track ID: "${this._fetchingTrackId}")`);
-                return null;
-            }
             const sourcesTypes = {
                 musixmatch: ["plain", "line", "word"],
                 lrclib: ["plain", "line"],
@@ -631,9 +624,6 @@ class SyncLyrics {
                     this.infoLog(`The source "${source}" doesn't exist, skipping...`);
                     continue;
                 }
-                this._fetching = true;
-                this._fetchingSource = source;
-                this._fetchingTrackId = this._trackId;
                 const lyrics = yield avaibleSources[source](metadata);
                 if (!lyrics)
                     continue;

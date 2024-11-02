@@ -1,19 +1,19 @@
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 export interface TokenData {
-    usertoken: string;
     cookies: string | undefined;
+    usertoken: string;
     expiresAt: number;
 }
 export interface Metadata {
     track?: string;
-    artist?: string;
     album?: string;
     length?: number;
+    artist?: string;
     trackId?: string;
 }
 export interface Cache<K, V> {
-    set(key: K, value: V): void;
     get(key: K): V | undefined | null;
+    set(key: K, value: V): void;
     has(key: K): boolean;
     [key: string]: any;
 }
@@ -53,38 +53,65 @@ export interface WordSyncedLyricsData {
     lyrics: Array<WordSyncedLyrics> | null | undefined;
 }
 export interface Lyrics {
+    wordSynced: WordSyncedLyricsData;
     lineSynced: LineSyncedLyricsData;
     plain: PlainLyricsData;
-    wordSynced: WordSyncedLyricsData;
 }
 export interface CacheLineSyncedLyricsData {
     source: string | null | undefined;
     lyrics: string | null | undefined;
 }
 export interface CacheLyrics {
+    wordSynced: WordSyncedLyricsData;
     lineSynced: CacheLineSyncedLyricsData;
     plain: PlainLyricsData;
-    wordSynced: WordSyncedLyricsData;
 }
 export interface LyricsOutput {
-    trackId: string;
-    lyrics: Lyrics;
-    track: string | undefined;
     artist: string | undefined;
+    track: string | undefined;
     album: string | undefined;
+    trackId: string;
     cached: boolean;
+    lyrics: Lyrics;
+}
+export interface MusixmatchSearchResult {
+    hasLineSyncedLyrics: boolean;
+    hasWordSyncedLyrics: boolean;
+    commonTrackId: string;
+    hasLyrics: boolean;
+    trackId: string;
+}
+export interface MusixmatchLyricsFetchResult {
+    wordSynced: Array<WordSyncedLyrics> | null;
+    lineSynced: string | null;
+    plain: string | null;
+}
+export interface MusixmatchFetchResult {
+    wordSynced?: Array<WordSyncedLyrics> | null;
+    lineSynced?: string | null;
+    plain?: string | null;
+    source: "Musixmatch";
+}
+export interface LrcLibFetchResult {
+    lineSynced: string | null;
+    plain: string | null;
+    source: "lrclib.net";
+    wordSynced: null;
+}
+export interface NeteaseFetchResult {
+    lineSynced: string | null;
+    source: "Netease";
+    wordSynced: null;
+    plain: null;
 }
 export declare class SyncLyrics {
     logLevel: "none" | "info" | "warn" | "error" | "debug";
     instrumentalLyricsIndicator: string;
     sources: Sources;
-    private lyrics;
     cache: Cache<string | null | undefined, CacheLyrics | null | undefined | null>;
     saveMusixmatchToken: null | undefined | ((tokenData: TokenData) => void | Promise<void>);
     getMusixmatchToken: null | undefined | (() => TokenData | Promise<TokenData | null | undefined> | null | undefined);
-    private _fetching;
-    private _fetchingTrackId;
-    private _fetchingSource;
+    private lyrics;
     private _trackId;
     constructor(data?: Data);
     private getMusixmatchUsertoken;
@@ -101,7 +128,7 @@ export declare class SyncLyrics {
     private fetchLyricsNetease;
     private _getLyrics;
     getLyrics(metadata: Metadata, skipCache?: boolean): Promise<LyricsOutput>;
-    parseLyrics(lyrics?: string | null | undefined): FormattedLyric[] | null;
+    parseLyrics(lyrics?: string | null | undefined): Array<FormattedLyric> | null;
     getTrackId(metadata: Metadata): string;
     private warnLog;
     private debugLog;

@@ -17,10 +17,10 @@ const LyricsManager = new SyncLyrics({
     logLevel: 'none', // One of "none" | "info" | "warn" | "error" | "debug"
     instrumentalLyricsIndicator: "", // Any string
     sources: ["musixmatch", "lrclib", "netease"], // An array with atleast one of those sources
-    saveMusixmatchToken: (tokenData) => { // A custom function to save the Musixmatch token, otherwise it'll be saved in /tmp/musixmatchToken.json
+    saveMusixmatchToken: (tokenData) => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatdh fetch
         mxmToken = tokenData;
     },
-    getMusixmatchToken: () => { // A custom function to save the Musixmatch token, otherwise it'll try to read /tmp/musixmatchToken.json
+    getMusixmatchToken: () => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatdh fetch
         return mxmToken;
     },
 })

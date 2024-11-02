@@ -4,10 +4,11 @@ const sleep = promisify(setTimeout);
 
 /**
  * Avaible sources:
- * - {@link https://musixmatch.com Musixmatch}
- * - {@link https://lrclib.net LrcLib.net}
- * - {@link https://music.163.com Netease}
- */
+ * - {@link !Musixmatch Musixmatch}
+ * - {@link !LrcLib.net LrcLib.net}
+ * - {@link !Netease Netease}
+ * @public
+*/
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 
 const logLevels = {
@@ -19,43 +20,48 @@ const logLevels = {
 };
 
 /**
- * {@link https://musixmatch.com Musixmatch} token data
+ * {@link !Musixmatch Musixmatch} token data
+ * @interface
+ * @property usertoken {@link !Musixmatch Musixmatch}'s usertoken
+ * @property cookies Cookies used for the {@link !Musixmatch Musixmatch}'s API request
+ * @property expiresAt When the {@link !Musixmatch Musixmatch}'s {@link TokenData#usertoken usertoken} expires
  * @private
- * @property usertoken {@link https://musixmatch.com Musixmatch}'s usertoken
- * @property cookies Cookies used for the {@link https://musixmatch.com Musixmatch}'s API request
- * @property expiresAt When the {@link https://musixmatch.com Musixmatch}'s {@link TokenData#usertoken usertoken} expires
- */
+*/
 export interface TokenData {
-	usertoken: string;
 	cookies: string | undefined;
+	usertoken: string;
 	expiresAt: number;
 }
 
 /**
  * Song's metadata
+ * @interface
  * @property track Song's name
  * @property artist Song's artist(s)
  * @property album Song's album
  * @property length Song's duration (in ms)
  * @property trackId Song's ID (returned by {@link SyncLyrics#getTrackId getTrackId})
+ * @public
  */
 export interface Metadata {
 	track?: string;
-	artist?: string;
 	album?: string;
 	length?: number;
+	artist?: string;
 	trackId?: string;
 }
 
 /**
  * Any method that can store data and has .set(), .get() and .has() functions
+ * @interface
  * @property set Function used to set the {@link Lyrics song's data} to the cache
  * @property get Function used to get the {@link Lyrics song's data} to the cache
  * @property has Function to check if the cache has the {@link Lyrics song's data}
+ * @public
  */
 export interface Cache<K, V> {
-	set(key: K, value: V): void;
 	get(key: K): V | undefined | null;
+	set(key: K, value: V): void;
 	has(key: K): boolean;
 	[key: string]: any;
 }
@@ -66,8 +72,9 @@ export interface Cache<K, V> {
  * @property instrumentalLyricsIndicator The character to use for instrumental lyrics (more than 3 seconds of music without any voice)
  * @property sources Array of sources to use, in the order they have to be fetched
  * @property cache Any method that can store data and has .set(), .get() and .has() functions
- * @property saveMusixmatchToken Function used to save the {@link https://musixmatch.com Musixmatch} token (required to fetch the lyrics data from {@link https://musixmatch.com Musixmatch})
- * @property getMusixmatchToken Function used to fetch the {@link https://musixmatch.com Musixmatch} token (required to fetch the lyrics data from {@link https://musixmatch.com Musixmatch})
+ * @property saveMusixmatchToken Function used to save the {@link !Musixmatch Musixmatch} token (required to fetch the lyrics data from {@link !Musixmatch Musixmatch})
+ * @property getMusixmatchToken Function used to fetch the {@link !Musixmatch Musixmatch} token (required to fetch the lyrics data from {@link !Musixmatch Musixmatch})
+ * @public
  */
 export interface Data {
 	logLevel?: "none" | "info" | "warn" | "error" | "debug";
@@ -88,6 +95,7 @@ export interface Data {
  * @interface 
  * @property time When the lyric starts
  * @property text Lyric's text
+ * @public
  */
 export interface FormattedLyric {
 	time: number;
@@ -98,7 +106,8 @@ export interface FormattedLyric {
  * @interface
  * @property parse Function to parse the returned lyrics into {@link FormattedLyric}
  * @property source Lyrics source
- * @property lyrics Line synced lyrics in the {@link https://en.wikipedia.org/wiki/LRC_(file_format) LRC} format
+ * @property lyrics Line synced lyrics in the {@link !LRC_file_format LRC} format
+ * @public
  */
 export interface LineSyncedLyricsData {
 	parse: (lyrics?: string | null | undefined) => FormattedLyric[] | null;
@@ -110,6 +119,7 @@ export interface LineSyncedLyricsData {
  * @interface
  * @property source Lyrics source
  * @property lyrics Lyrics as plain text
+ * @public
  */
 export interface PlainLyricsData {
 	source: string | null | undefined;
@@ -120,6 +130,7 @@ export interface PlainLyricsData {
  * @interface
  * @property character The character of the timeframe that starts at the specified {@link WordSyncedLyricsLine#time time}
  * @property time When the character timeframe starts
+ * @public
  */
 export interface WordSyncedLyricsLine {
 	character: string;
@@ -132,6 +143,7 @@ export interface WordSyncedLyricsLine {
  * @property start When the lyric's line starts
  * @property lyric The lyric complete text
  * @property syncedLyric The lyric synced by characters
+ * @public
  */
 export interface WordSyncedLyrics {
 	end: number;
@@ -144,6 +156,7 @@ export interface WordSyncedLyrics {
  * @interface
  * @property source Lyrics source
  * @property lyrics {@link WordSyncedLyrics Word synced lyrics}
+ * @public
  */
 export interface WordSyncedLyricsData {
 	source: string | null | undefined;
@@ -155,17 +168,19 @@ export interface WordSyncedLyricsData {
  * @property lineSynced {@link LineSyncedLyricsData Line synced lyrics}
  * @property plain {@link PlainLyricsData Plain lyrics}
  * @property wordSynced {@link WordSyncedLyricsData Word synced lyrics}
+ * @public
  */
 export interface Lyrics {
+	wordSynced: WordSyncedLyricsData;
 	lineSynced: LineSyncedLyricsData;
 	plain: PlainLyricsData;
-	wordSynced: WordSyncedLyricsData;
 }
 
 /**
  * @interface
  * @property source Lyrics source
- * @property lyrics Line synced lyrics in the {@link https://en.wikipedia.org/wiki/LRC_(file_format) LRC} format
+ * @property lyrics Line synced lyrics in the {@link !LRC_file_format LRC} format
+ * @private
  */
 export interface CacheLineSyncedLyricsData {
 	source: string | null | undefined;
@@ -177,11 +192,12 @@ export interface CacheLineSyncedLyricsData {
  * @property lineSynced {@link CacheLineSyncedLyricsData Line synced lyrics}
  * @property plain {@link PlainLyricsData Plain lyrics}
  * @property wordSynced {@link WordSyncedLyricsData Word synced lyrics}
+ * @private
  */
 export interface CacheLyrics {
+	wordSynced: WordSyncedLyricsData;
 	lineSynced: CacheLineSyncedLyricsData;
 	plain: PlainLyricsData;
-	wordSynced: WordSyncedLyricsData;
 }
 
 /**
@@ -192,14 +208,90 @@ export interface CacheLyrics {
  * @property artist Song's artist(s)
  * @property album Song's album
  * @property cached Whetever the song data was retrieved from the cache rather than the APIs
+ * @public
  */
 export interface LyricsOutput {
-    trackId: string;
-    lyrics: Lyrics;
-    track: string | undefined;
     artist: string | undefined;
+    track: string | undefined;
     album: string | undefined;
+    trackId: string;
     cached: boolean;
+    lyrics: Lyrics;
+}
+
+/**
+ * @interface
+ * @property commonTrackId {@link !Musixmatch Musixmatch}'s commontrack_id
+ * @property trackId {@link !Musixmatch Musixmatch}'s track_id
+ * @property hasLyrics Whetever the {@link !Musixmatch Musixmatch}'s catalogue has the song's plain lyrics
+ * @property hasLineSyncedLyrics Whetever the {@link !Musixmatch Musixmatch}'s catalogue has the song's line synced lyrics
+ * @property hasWordSyncedLyrics Whetever the {@link !Musixmatch Musixmatch}'s catalogue has the song's word synced lyrics
+ * @private
+ */
+export interface MusixmatchSearchResult {
+	hasLineSyncedLyrics: boolean;
+    hasWordSyncedLyrics: boolean;
+    commonTrackId: string;
+    hasLyrics: boolean;
+	trackId: string;
+}
+
+/**
+ * @interface
+ * @property plain Track's plain lyrics
+ * @property lineSynced Track's line synced lyrics
+ * @property wordSynced Track's word synced lyrics
+ * @private
+ */
+export interface MusixmatchLyricsFetchResult {
+    wordSynced: Array<WordSyncedLyrics> | null;
+	lineSynced: string | null;
+    plain: string | null;
+}
+
+/**
+ * @interface
+ * @property source Musixmatch
+ * @property plain Plain lyrics if avaible
+ * @property lineSynced Line synced lyrics if avaible
+ * @property wordSynced Line synced lyrics if avaible
+ * @private
+ */
+export interface MusixmatchFetchResult {
+    wordSynced?: Array<WordSyncedLyrics> | null;
+    lineSynced?: string | null;
+    plain?: string | null;
+	source: "Musixmatch";
+}
+
+/**
+ * @interface
+ * @property source lrclib.net
+ * @property plain Plain lyrics if avaible
+ * @property lineSynced Line synced lyrics if avaible
+ * @property wordSynced Always null as {@link !LrcLib.net lrclib.net} does not support word synced lyrics
+ * @private
+ */
+export interface LrcLibFetchResult {
+    lineSynced: string | null;
+    plain: string | null;
+    source: "lrclib.net";
+    wordSynced: null;
+}
+
+/**
+ * @interface
+ * @property source Netease
+ * @property plain Always null as {@link !Netease Netease} does not support word synced lyrics
+ * @property lineSynced Line synced lyrics if avaible
+ * @property wordSynced Always null as {@link !Netease Netease} does not support word synced lyrics
+ * @private
+ */
+export interface NeteaseFetchResult {
+    lineSynced: string | null;
+    source: "Netease";
+    wordSynced: null;
+    plain: null;
 }
 
 /**
@@ -207,37 +299,36 @@ export interface LyricsOutput {
  * @property instrumentalLyricsIndicator The character to use for instrumental lyrics (more than 3 seconds of music without any voice)
  * @property sources Array of sources to use, in the order they have to be fetched
  * @property cache Any method that can store data and has .set(), .get() and .has() functions
- * @property saveMusixmatchToken Function used to save the {@link https://musixmatch.com Musixmatch} token (required to fetch the lyrics data from {@link https://musixmatch.com Musixmatch})
- * @property getMusixmatchToken Function used to fetch the {@link https://musixmatch.com Musixmatch} token (required to fetch the lyrics data from {@link https://musixmatch.com Musixmatch})
+ * @property saveMusixmatchToken Function used to save the {@link !Musixmatch Musixmatch} token (required to fetch the lyrics data from {@link !Musixmatch Musixmatch})
+ * @property getMusixmatchToken Function used to fetch the {@link !Musixmatch Musixmatch} token (required to fetch the lyrics data from {@link !Musixmatch Musixmatch})
+ * @property _trackId Used for the logging within the different functions and to fetch the track's data from the {@link SyncLyrics#cache cache} if avaible
+ * @property lyrics The fetched lyrics, used for the {@link LineSyncedLyricsData#parse .parse()} method in the {@link LineSyncedLyricsData}
  */
 export class SyncLyrics {
 	public logLevel: "none" | "info" | "warn" | "error" | "debug";
 	public instrumentalLyricsIndicator: string;
 	public sources: Sources;
-	private lyrics: string | null | undefined;
 	public cache: Cache<
-		string | null | undefined,
-		| CacheLyrics
+	string | null | undefined,
+	| CacheLyrics
 		| null
 		| undefined
 		| null
-	>;
+		>;
 	public saveMusixmatchToken:
-		| null
-		| undefined
-		| ((tokenData: TokenData) => void | Promise<void>);
+	| null
+	| undefined
+	| ((tokenData: TokenData) => void | Promise<void>);
 	public getMusixmatchToken:
-		| null
-		| undefined
-		| (() =>
-				| TokenData
-				| Promise<TokenData | null | undefined>
-				| null
-				| undefined);
-
-	private _fetching: boolean;
-	private _fetchingTrackId: string | null;
-	private _fetchingSource: string | null;
+	| null
+	| undefined
+	| (() =>
+		| TokenData
+	| Promise<TokenData | null | undefined>
+	| null
+	| undefined);
+	
+	private lyrics: string | null | undefined;
 	private _trackId: string | null;
 
 	/**
@@ -251,10 +342,10 @@ export class SyncLyrics {
 	 *     logLevel: 'none', // One of "none" | "info" | "warn" | "error" | "debug"
 	 *     instrumentalLyricsIndicator: "", // Any string
 	 *     sources: ["musixmatch", "lrclib", "netease"], // An array with atleast one of those sources
-	 *     saveMusixmatchToken: (tokenData) => { // A custom function to save the Musixmatch token, otherwise it'll be saved in /tmp/musixmatchToken.json
+	 *     saveMusixmatchToken: (tokenData) => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatdh fetch
 	 *         mxmToken = tokenData;
 	 *     },
-	 *     getMusixmatchToken: () => { // A custom function to save the Musixmatch token, otherwise it'll try to read /tmp/musixmatchToken.json
+	 *     getMusixmatchToken: () => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatdh fetch
 	 *         return mxmToken;
 	 *     },
 	 * })
@@ -273,9 +364,6 @@ export class SyncLyrics {
 
 		this.lyrics = null;
 
-		this._fetching = false;
-		this._fetchingTrackId = null;
-		this._fetchingSource = null;
 		this._trackId = null;
 
 		this._fetchLineSyncedLyricsMusixmatch =
@@ -303,6 +391,11 @@ export class SyncLyrics {
 		this.warnLog = this.warnLog.bind(this);
 	}
 
+	/**
+	 * Gets the {@link !Musixmatch Musixmatch}'s usertoken if not returned by the {@link Data#getMusixmatchToken getMusixmatchToken()} method
+	 * @param cookies {@link !Musixmatch Musixmatch}'s HTTP request cookies
+	 * @returns {@link !Musixmatch Musixmatch}'s {@link TokenData token data}
+	 */
 	private async getMusixmatchUsertoken(
 		cookies?: string,
 	): Promise<TokenData | null | undefined> {
@@ -397,10 +490,16 @@ export class SyncLyrics {
 		} catch (e) {}
 	}
 
+	/**
+	 * Searchs the {@link !Musixmatch Musixmatch} catalog with the data provided in the {@link Metadata metadata}
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param tokenData The {@link !Musixmatch Musixmatch}'s {@link TokenData token data}
+	 * @returns If found, the {@link !Musixmatch Musixmatch}'s commontrack_id, track_id and whetever the track has lyrics, line synced lyrics or word synced lyrics
+	 */
 	private async _searchLyricsMusixmatch(
 		metadata: Metadata,
 		tokenData: TokenData,
-	) {
+	): Promise<MusixmatchSearchResult | null> {
 		if (!metadata || !tokenData) return null;
 
 		// @ts-ignore
@@ -513,6 +612,12 @@ export class SyncLyrics {
 		}
 	}
 
+	/**
+	 * Fetches the plain lyrics of the song from {@link !Musixmatch Musixmatch}, only if the search result specifies the song has plain lyrics
+	 * @param tokenData The {@link !Musixmatch Musixmatch}'s {@link TokenData token data}
+	 * @param commonTrackId The {@link !Musixmatch Musixmatch} track's commontrack_id
+	 * @returns The Track's {@link PlainLyricsData#lyrics Lyrics} if avaible
+	 */
 	private async _fetchPlainLyricsMusixmatch(
 		tokenData: TokenData,
 		commonTrackId: string,
@@ -583,6 +688,12 @@ export class SyncLyrics {
 		}
 	}
 
+	/**
+	 * Fetches the line synced lyrics of the song from {@link !Musixmatch Musixmatch}, only if the search result specifies the song has line synced lyrics
+	 * @param tokenData The {@link !Musixmatch Musixmatch}'s {@link TokenData token data}
+	 * @param commonTrackId The {@link !Musixmatch Musixmatch} track's commontrack_id
+	 * @returns The Track's {@link LineSyncedLyricsData#lyrics Lyrics} if avaible
+	 */
 	private async _fetchLineSyncedLyricsMusixmatch(
 		tokenData: TokenData,
 		commonTrackId: string,
@@ -653,15 +764,16 @@ export class SyncLyrics {
 		}
 	}
 
+	/**
+	 * Fetches the line word lyrics of the song from {@link !Musixmatch Musixmatch}, only if the search result specifies the song has word synced lyrics
+	 * @param tokenData The {@link !Musixmatch Musixmatch}'s {@link TokenData token data}
+	 * @param trackId The {@link !Musixmatch Musixmatch} track's track_id
+	 * @returns The Track's {@link WordSyncedLyricsData#lyrics Lyrics} if avaible
+	 */
 	private async _fetchWordSyncedLyricsMusixmatch(
 		tokenData: TokenData,
 		trackId: string,
-	): Promise<Array<{
-		end: number;
-		start: number;
-		lyric: string;
-		syncedLyric: Array<{ character: string; time: number }>;
-	}> | null> {
+	): Promise<Array<WordSyncedLyrics> | null> {
 		if (!tokenData || !trackId) return null;
 
 		const searchParams: URLSearchParams = new URLSearchParams({
@@ -754,6 +866,17 @@ export class SyncLyrics {
 		}
 	}
 
+	/**
+	 * Fetches the song's lyrics based on the search results
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param tokenData The {@link !Musixmatch Musixmatch}'s {@link TokenData token data}
+	 * @param trackId The {@link !Musixmatch Musixmatch} track's track_id
+	 * @param commonTrackId The {@link !Musixmatch Musixmatch} track's commontrack_id
+	 * @param hasLyrics Whetever the search result specifies the song has plain lyrics
+	 * @param hasLineSyncedLyrics Whetever the search result specifies the song has line synced lyrics
+	 * @param hasWordSyncedLyrics Whetever the search result specifies the song has word synced lyrics
+	 * @returns Plain, line synced and word synced lyrics when avaible
+	 */
 	private async _fetchLyricsMusixmatch(
 		metadata: Metadata,
 		tokenData: TokenData,
@@ -762,7 +885,7 @@ export class SyncLyrics {
 		hasLyrics: boolean,
 		hasLineSyncedLyrics: boolean,
 		hasWordSyncedLyrics: boolean,
-	) {
+	): Promise<MusixmatchLyricsFetchResult | null> {
 		if (
 			!metadata ||
 			(!commonTrackId && !trackId) ||
@@ -771,16 +894,7 @@ export class SyncLyrics {
 		)
 			return null;
 
-		const lyricsData: {
-			plain: string | null;
-			lineSynced: string | null;
-			wordSynced: Array<{
-				end: number;
-				start: number;
-				lyric: string;
-				syncedLyric: Array<{ character: string; time: number }>;
-			}> | null;
-		} = {
+		const lyricsData: MusixmatchLyricsFetchResult = {
 			plain: null,
 			lineSynced: null,
 			wordSynced: null,
@@ -805,7 +919,12 @@ export class SyncLyrics {
 		return lyricsData;
 	}
 
-	private async _searchLyricsNetease(metadata: Metadata) {
+	/**
+	 * Searchs the {@link !Netease Netease} catalog with the data provided in the {@link Metadata metadata}
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @returns If found, the {@link !Netease Netease} track's ID
+	 */
+	private async _searchLyricsNetease(metadata: Metadata): Promise<string | null> {
 		// @ts-ignore
 		const searchParams: URLSearchParams = new URLSearchParams({
 			limit: 10,
@@ -882,7 +1001,13 @@ export class SyncLyrics {
 		}
 	}
 
-	private async _fetchLyricsNetease(metadata: Metadata, trackId: string) {
+	/**
+	 * Fetches the line synced lyrics from {@link !Netease Netease}
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @param trackId The {@link !Netease Netease} track's ID
+	 * @returns The track's line synced lyrics if avaible
+	 */
+	private async _fetchLyricsNetease(metadata: Metadata, trackId: string): Promise<string | null> {
 		if (!metadata || !trackId) return null;
 
 		const searchParams: URLSearchParams = new URLSearchParams({
@@ -938,7 +1063,12 @@ export class SyncLyrics {
 		}
 	}
 
-	private _parseNeteaseLyrics(slyrics: string) {
+	/**
+	 * Removes useless metadata returned by {@link !Netease Netease}
+	 * @param slyrics Lyrics returned by {@link !Netease Netease}
+	 * @returns {@link !Netease Netease} returned lyrics without extra metadata
+	 */
+	private _parseNeteaseLyrics(slyrics: string): string {
 		const lines = slyrics.split(/\r?\n/).map((line) => line.trim());
 		const lyrics: Array<string> = [];
 
@@ -986,8 +1116,13 @@ export class SyncLyrics {
 		return lyrics.join("\n");
 	}
 
-	private async fetchLyricsLrclib(metadata: Metadata) {
-		if (!metadata) return;
+	/**
+	 * Fetches the plain and line synced lyrics from the {@link !LrcLib.net lrclib.net}'s catalogue
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @returns Plain and line synced lyrics from {@link !LrcLib.net lrclib.net} when avaible
+	 */
+	private async fetchLyricsLrclib(metadata: Metadata): Promise<LrcLibFetchResult | null> {
+		if (!metadata) return null;
 
 		this.infoLog(
 			`Fetching the lyrics for "${metadata.track}" from "${metadata.album}" from "${metadata.artist}" (${this._trackId}) [LRCLIB]`,
@@ -1062,8 +1197,13 @@ export class SyncLyrics {
 		}
 	}
 
-	private async fetchLyricsMusixmatch(metadata: Metadata) {
-		if (!metadata) return;
+	/**
+	 * Fetches the plain, line synced and word synced lyrics from the {@link !Musixmatch Musixmatch}'s catalogue
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @returns Plain, line synced and word synced lyrics from {@link !Musixmatch Musixmatch} when avaible
+	 */
+	private async fetchLyricsMusixmatch(metadata: Metadata): Promise<MusixmatchFetchResult | null> {
+		if (!metadata) return null;
 
 		const tokenData = await this.getMusixmatchUsertoken();
 
@@ -1107,8 +1247,13 @@ export class SyncLyrics {
 		};
 	}
 
-	private async fetchLyricsNetease(metadata: Metadata) {
-		if (!metadata) return;
+	/**
+	 * Fetches the line synced lyrics from the {@link !Netease Netease}'s catalogue
+	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @returns Line synced lyrics from {@link !Netease Netease} when avaible
+	 */
+	private async fetchLyricsNetease(metadata: Metadata): Promise<NeteaseFetchResult | null> {
+		if (!metadata) return null;
 
 		const trackId = await this._searchLyricsNetease(metadata);
 
@@ -1128,15 +1273,12 @@ export class SyncLyrics {
 		};
 	}
 
-	private async _getLyrics(metadata: Metadata) {
-		if (this._fetching && this._fetchingTrackId === this._trackId) {
-			this.warnLog(
-				`Already fetching from the source "${this._fetchingSource}" (Track ID: "${this._fetchingTrackId}")`,
-			);
-
-			return null;
-		}
-
+	/**
+	 * Fetches the lyrics from the specified {@link Data#sources sources}
+	 * @param metadata metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album} or {@link Metadata#length duration}
+	 * @returns The lyrics fetched the avaible sources
+	 */
+	private async _getLyrics(metadata: Metadata): Promise<CacheLyrics> {
 		const sourcesTypes = {
 			musixmatch: ["plain", "line", "word"],
 			lrclib: ["plain", "line"],
@@ -1222,10 +1364,6 @@ export class SyncLyrics {
 				continue;
 			}
 
-			this._fetching = true;
-			this._fetchingSource = source;
-			this._fetchingTrackId = this._trackId;
-
 			const lyrics = await avaibleSources[source](metadata);
 
 			if (!lyrics) continue;
@@ -1250,7 +1388,7 @@ export class SyncLyrics {
 	}
 
 	/**
-	 * Fetches the song based on the track's {@link Metadata metadata} or ID
+	 * Fetches from the {@link Data#cache cache} or the {@link Data#sources sources}, the song based on the track's {@link Metadata metadata} or ID
 	 * @param metadata The song's {@link Metadata#track name}, {@link Metadata#artist artist}, {@link Metadata#album album}, {@link Metadata#length duration} or {@link Metadata#trackId ID}
 	 * @param skipCache Whetever skip cache check or not
 	 * @returns The lyrics of the song when avaible
@@ -1354,10 +1492,10 @@ export class SyncLyrics {
 
 	/**
 	 * Parses LRC formatted lyrics into an array of {@link FormattedLyric#text text} and {@link FormattedLyric#time time}
-	 * @param lyrics The lineSynced lyrics (or any string in the {@link https://en.wikipedia.org/wiki/LRC_(file_format) LRC}) returned by {@link SyncLyrics#getLyrics getLyrics}
+	 * @param lyrics The lineSynced lyrics (or any string in the {@link !LRC_file_format LRC}) returned by {@link SyncLyrics#getLyrics getLyrics}
 	 * @returns The lyrics as an {@link FormattedLyric array of time and text}
 	 */
-	public parseLyrics(lyrics: string | null | undefined = this.lyrics) {
+	public parseLyrics(lyrics: string | null | undefined = this.lyrics): Array<FormattedLyric> | null {
 		const lyricsSplit = lyrics?.split("\n");
 
 		if (!lyricsSplit) return null;
@@ -1429,7 +1567,7 @@ export class SyncLyrics {
 	 * }).then(console.log)
 	 * ```
 	 */
-	public getTrackId(metadata: Metadata) {
+	public getTrackId(metadata: Metadata): string {
 		if (metadata.trackId) return metadata.trackId;
 
 		return btoa(
@@ -1441,25 +1579,45 @@ export class SyncLyrics {
 		);
 	}
 
-	private warnLog(...args: any) {
+	/**
+	 * Logs the text with a yellow "WARN: " prefix
+	 * @param args Text to log
+	 * @returns Nothing
+	 */
+	private warnLog(...args: any): void {
 		if ((logLevels[this.logLevel] || 0) < logLevels.warn) return;
 
 		console.warn("\x1b[33;1mWARNING:\x1b[0m", ...args);
 	}
 
-	private debugLog(...args: any) {
+	/**
+	 * Logs the text with a purple "DEBUG: " prefix
+	 * @param args Text to log
+	 * @returns Nothing
+	 */
+	private debugLog(...args: any): void {
 		if ((logLevels[this.logLevel] || 0) < logLevels.debug) return;
 
 		console.debug("\x1b[35;1mDEBUG:\x1b[0m", ...args);
 	}
 
-	private errorLog(...args: any) {
+	/**
+	 * Logs the text with a red "ERROR: " prefix
+	 * @param args Text to log
+	 * @returns Nothing
+	 */
+	private errorLog(...args: any): void {
 		if ((logLevels[this.logLevel] || 0) < logLevels.debug) return;
 
 		console.debug("\x1b[35;1mDEBUG:\x1b[0m", ...args);
 	}
 
-	private infoLog(...args: any) {
+	/**
+	 * Logs the text with a blue "INFO: " prefix
+	 * @param args Text to log
+	 * @returns Nothing
+	 */
+	private infoLog(...args: any): void {
 		if ((logLevels[this.logLevel] || 0) < logLevels.info) return;
 
 		console.info("\x1b[34;1mINFO:\x1b[0m", ...args);
@@ -1467,11 +1625,11 @@ export class SyncLyrics {
 }
 
 /**
- * 
- * @param string Parses special characters (Usually returned by {@link https://music.163.com Netease}) into common characters
+ * Parses special characters (Usually returned by {@link !Netease Netease}) into common characters
+ * @param string The string to parse
  * @returns Parsed string with common characters
  */
-export function normalize(string: string) {
+export function normalize(string: string): string {
 	return string
 		.replace(/（/g, "(")
 		.replace(/）/g, ")")

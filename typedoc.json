@@ -1,0 +1,22 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["./src"],
+    "out": "docs",
+    "cname": "synclyrics.js.org",
+    "plugin": ["typedoc-github-theme"],
+    "excludePrivate": false,
+    "name": "SyncLyrics",
+    "includeVersion": true,
+    "sidebarLinks": {
+        "Home": "/"
+    },
+    "hostedBaseUrl": "https://synclyrics.js.org",
+    "externalSymbolLinkMappings": {
+        "global": {
+            "Musixmatch": "https://musixmatch.com",
+            "LrcLib.net": "https://lrclib.net",
+            "Netease": "https://music.163.com",
+            "LRC_file_format": "https://en.wikipedia.org/wiki/LRC_(file_format)"
+        }
+    }
+}
