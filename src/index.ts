@@ -337,10 +337,10 @@ export class SyncLyrics {
 	 *     logLevel: 'none', // One of "none" | "info" | "warn" | "error" | "debug"
 	 *     instrumentalLyricsIndicator: "", // Any string
 	 *     sources: ["musixmatch", "lrclib", "netease"], // An array with atleast one of those sources
-	 *     saveMusixmatchToken: (tokenData) => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatdh fetch
+	 *     saveMusixmatchToken: (tokenData) => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatch fetch
 	 *         mxmToken = tokenData;
 	 *     },
-	 *     getMusixmatchToken: () => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatdh fetch
+	 *     getMusixmatchToken: () => { // A custom function to save the Musixmatch token, otherwise it'll skip Musixmatch fetch
 	 *         return mxmToken;
 	 *     },
 	 * })
