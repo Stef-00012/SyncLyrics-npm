@@ -1645,9 +1645,9 @@ export class SyncLyrics {
 			return this;
 		}
 
-		if (!Object.keys(logLevel).includes(logLevel))
+		if (!Object.keys(logLevels).includes(logLevel))
 			throw new Error(
-				`SyncLyrics: logLevel must be one of "${Object.keys(logLevel).join('" | "')}"`,
+				`SyncLyrics: logLevel must be one of "${Object.keys(logLevels).join('" | "')}"`,
 			);
 
 		this.logLevel = logLevel;

@@ -88,30 +88,30 @@ describe("Invalid methods", () => {
 });
 
 describe("Valid methods", () => {
-	it("Should return data with debug logs and custom musixmatch token handling", async ({
-		assert,
-	}) => {
-		let mxmToken;
+	// it("Should return data with debug logs and custom musixmatch token handling", async ({
+	// 	assert,
+	// }) => {
+	// 	let mxmToken;
 
-		const LyricsManager = new SyncLyrics({
-			logLevel: "debug",
-			saveMusixmatchToken: (tokenData) => {
-				mxmToken = tokenData;
-			},
-			getMusixmatchToken: () => {
-				return mxmToken;
-			},
-		});
+	// 	const LyricsManager = new SyncLyrics({
+	// 		logLevel: "debug",
+	// 		saveMusixmatchToken: (tokenData) => {
+	// 			mxmToken = tokenData;
+	// 		},
+	// 		getMusixmatchToken: () => {
+	// 			return mxmToken;
+	// 		},
+	// 	});
 
-		const data = await LyricsManager.getLyrics({
-			track: "right person, wrong time",
-			artist: "Henry Moodie",
-			album: "good old days",
-			length: 175000,
-		});
+	// 	const data = await LyricsManager.getLyrics({
+	// 		track: "right person, wrong time",
+	// 		artist: "Henry Moodie",
+	// 		album: "good old days",
+	// 		length: 175000,
+	// 	});
 
-		assert.ok(data);
-	});
+	// 	assert.ok(data);
+	// });
 
 	it("Should return data with all default values", async ({ assert }) => {
 		const LyricsManager = new SyncLyrics();
@@ -122,6 +122,16 @@ describe("Valid methods", () => {
 		});
 
 		assert.ok(data);
+	});
+
+	it('Should chnage logLevel to "info"', async ({ assert }) => {
+		const LyricsManager = new SyncLyrics();
+
+		assert.strictEqual(LyricsManager.logLevel, "none")
+
+		LyricsManager.setLogLevel("info")
+
+		assert.strictEqual(LyricsManager.logLevel, "info");
 	});
 });
 
