@@ -11,7 +11,7 @@
   "scripts": {
     "build": "npm run build:compile && npm run build:docs",
     "build:compile": "tsc && google-closure-compiler --js=dist/index.js --js_output_file=dist/index.min.js",
-    "build:docs": "typedoc src --plugin typedoc-github-theme",
+    "build:docs": "typedoc src --cname synclyrics.js.org --plugin typedoc-github-theme",
     "test": "node tests/test.js",
     "tests:valid1": "node tests/valid1.js",
     "tests:valid2": "node tests/valid2.js",
