@@ -32,9 +32,8 @@ LyricsManager.getLyrics({
     album: "good old days", // Song album
     length: 175000, // Song duration, in ms
 }).then(data => {
-    console.log(data.lyrics) // LRC format
-    console.log(data.parse()) // Array of objects with time as seconds and text of each line
-})
+    console.log(data)
+}) // Array of objects with time as seconds and text of each line
 
 // or
 
@@ -49,7 +48,6 @@ const trackId = LyricsManager.getTrackId({
 LyricsManager.getLyrics({
     trackId: trackId
 }).then(data => {
-    console.log(data.lyrics) // LRC format
-    console.log(data.parse()) // Array of objects with time as seconds and text of each line
+    console.log(data)
 })
 ```
