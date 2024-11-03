@@ -613,7 +613,11 @@ class SyncLyrics {
                 lrclib: this.fetchLyricsLrclib,
                 netease: this.fetchLyricsNetease,
             };
-            let userSources = this.sources || ["musixmatch", "lrclib", "netease"];
+            let userSources = this.sources || [
+                "musixmatch",
+                "lrclib",
+                "netease",
+            ];
             const lyricsData = {
                 plain: {
                     source: null,

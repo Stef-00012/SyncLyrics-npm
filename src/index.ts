@@ -13,8 +13,8 @@ export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 export type LogLevel = "none" | "info" | "warn" | "error" | "debug";
 export type LyricType = Array<"plain" | "lineSynced" | "wordSynced">;
 
-export const sources: Sources = ["musixmatch", "lrclib", "netease"]
-export const lyricType: LyricType = ["plain", "lineSynced", "wordSynced"]
+export const sources: Sources = ["musixmatch", "lrclib", "netease"];
+export const lyricType: LyricType = ["plain", "lineSynced", "wordSynced"];
 
 export const logLevels = {
 	debug: 4,
@@ -1371,7 +1371,11 @@ export class SyncLyrics {
 			netease: this.fetchLyricsNetease,
 		};
 
-		let userSources: Sources = this.sources || ["musixmatch", "lrclib", "netease"];
+		let userSources: Sources = this.sources || [
+			"musixmatch",
+			"lrclib",
+			"netease",
+		];
 
 		const lyricsData: {
 			plain: {
@@ -1414,7 +1418,9 @@ export class SyncLyrics {
 		this._fetching = true;
 
 		if (
-			userSources.every((source) => !Object.keys(avaibleSources).includes(source))
+			userSources.every(
+				(source) => !Object.keys(avaibleSources).includes(source),
+			)
 		)
 			userSources = ["musixmatch", "lrclib", "netease"];
 
@@ -1543,12 +1549,15 @@ export class SyncLyrics {
 			const artist = splitId.shift() || "";
 			const album = splitId.shift() || "";
 
-			return await this.getLyrics({
-				track,
-				artist,
-				album,
-				lyricsType: lyricsFetchType,
-			}, skipCache);
+			return await this.getLyrics(
+				{
+					track,
+					artist,
+					album,
+					lyricsType: lyricsFetchType,
+				},
+				skipCache,
+			);
 		}
 
 		const lyrics =
