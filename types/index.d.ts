@@ -25,8 +25,8 @@ export interface Data {
     instrumentalLyricsIndicator?: string;
     sources?: Sources;
     cache?: Cache<string | null | undefined, CacheLyrics | null | undefined | null>;
-    saveMusixmatchToken?: (tokenData: TokenData) => void;
-    getMusixmatchToken?: () => TokenData | null | undefined;
+    saveMusixmatchToken?: (tokenData: TokenData) => void | Promise<void>;
+    getMusixmatchToken?: () => TokenData | null | undefined | Promise<TokenData | null | undefined>;
 }
 export interface FormattedLyric {
     time: number;
