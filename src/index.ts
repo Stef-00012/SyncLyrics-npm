@@ -13,7 +13,10 @@ export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 export type LogLevel = "none" | "info" | "warn" | "error" | "debug";
 export type LyricType = Array<"plain" | "lineSynced" | "wordSynced">;
 
-const logLevels = {
+export const sources: Sources = ["musixmatch", "lrclib", "netease"]
+export const lyricType: LyricType = ["plain", "lineSynced", "wordSynced"]
+
+export const logLevels = {
 	debug: 4,
 	error: 3,
 	warn: 2,
@@ -1368,7 +1371,7 @@ export class SyncLyrics {
 			netease: this.fetchLyricsNetease,
 		};
 
-		let sources: Sources = this.sources || ["musixmatch", "lrclib", "netease"];
+		let userSources: Sources = this.sources || ["musixmatch", "lrclib", "netease"];
 
 		const lyricsData: {
 			plain: {
@@ -1411,11 +1414,11 @@ export class SyncLyrics {
 		this._fetching = true;
 
 		if (
-			sources.every((source) => !Object.keys(avaibleSources).includes(source))
+			userSources.every((source) => !Object.keys(avaibleSources).includes(source))
 		)
-			sources = ["musixmatch", "lrclib", "netease"];
+			userSources = ["musixmatch", "lrclib", "netease"];
 
-		sourcesLoop: for (const source of sources) {
+		sourcesLoop: for (const source of userSources) {
 			this.infoLog(`Trying to fetch the lyrics from the source "${source}"`);
 
 			if (
@@ -1545,7 +1548,7 @@ export class SyncLyrics {
 				artist,
 				album,
 				lyricsType: lyricsFetchType,
-			});
+			}, skipCache);
 		}
 
 		const lyrics =
@@ -1711,99 +1714,99 @@ export class SyncLyrics {
 
 	/**
 	 * Updates or resets the log level
-	 * @param logLevel The new {@link Data#logLevel logLevel}
+	 * @param newLogLevel The new {@link Data#logLevel logLevel}
 	 * @returns Updated {@link SyncLyrics} instance
 	 */
-	public setLogLevel(logLevel?: LogLevel): this {
-		if (!logLevel) {
+	public setLogLevel(newLogLevel?: LogLevel): this {
+		if (!newLogLevel) {
 			this.logLevel = "none";
 
 			return this;
 		}
 
-		if (!Object.keys(logLevels).includes(logLevel))
+		if (!Object.keys(logLevels).includes(newLogLevel))
 			throw new Error(
 				`SyncLyrics: logLevel must be one of "${Object.keys(logLevels).join('" | "')}"`,
 			);
 
-		this.logLevel = logLevel;
+		this.logLevel = newLogLevel;
 
 		return this;
 	}
 
 	/**
 	 * Updates or resets the instrumental lyrics indicator (character used when there are more than 3 seconds of music without lyrics)
-	 * @param instrumentalLyricsIndicator The new {@link Data#instrumentalLyricsIndicator instrumentalLyricsIndicator}
+	 * @param newInstrumentalLyricsIndicator The new {@link Data#instrumentalLyricsIndicator instrumentalLyricsIndicator}
 	 * @returns Updated {@link SyncLyrics} instance
 	 */
 	public setInstrumentalLyricsIndicator(
-		instrumentalLyricsIndicator?: string,
+		newInstrumentalLyricsIndicator?: string,
 	): this {
-		if (!instrumentalLyricsIndicator) {
+		if (!newInstrumentalLyricsIndicator) {
 			this.instrumentalLyricsIndicator = "";
 
 			return this;
 		}
 
-		if (typeof instrumentalLyricsIndicator !== "string")
+		if (typeof newInstrumentalLyricsIndicator !== "string")
 			throw new Error(
 				"SyncLyrics: instrumentalLyricsIndicator must be a string",
 			);
 
-		this.instrumentalLyricsIndicator = instrumentalLyricsIndicator;
+		this.instrumentalLyricsIndicator = newInstrumentalLyricsIndicator;
 
 		return this;
 	}
 
 	/**
 	 * Updates or resets the sources
-	 * @param sources The new {@link Data#sources sources}
+	 * @param newSources The new {@link Data#sources sources}
 	 * @returns Updated {@link SyncLyrics} instance
 	 */
-	public setSources(sources?: Sources): this {
-		if (!sources) {
+	public setSources(newSources?: Sources): this {
+		if (!newSources) {
 			this.sources = ["musixmatch", "lrclib", "netease"];
 
 			return this;
 		}
 
-		if (!Array.isArray(sources) || sources.length <= 0)
+		if (!Array.isArray(newSources) || newSources.length <= 0)
 			throw new Error(
 				'SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"',
 			);
 
-		this.sources = sources;
+		this.sources = newSources;
 
 		return this;
 	}
 
 	/**
 	 * Updates or resets the cache
-	 * @param cache The new {@link Data#cache cache}
+	 * @param newCache The new {@link Data#cache cache}
 	 * @returns Updated {@link SyncLyrics} instance
 	 */
 	public setCache(
-		cache?: Cache<
+		newCache?: Cache<
 			string | null | undefined,
 			CacheLyrics | null | undefined | null
 		>,
 	): this {
-		if (!cache) {
+		if (!newCache) {
 			this.cache = new Map();
 
 			return this;
 		}
 
 		if (
-			typeof cache.get !== "function" ||
-			typeof cache.set !== "function" ||
-			typeof cache.has !== "function"
+			typeof newCache.get !== "function" ||
+			typeof newCache.set !== "function" ||
+			typeof newCache.has !== "function"
 		)
 			throw new Error(
 				"SyncLyrics: cache must have .get, .set and .has methods",
 			);
 
-		this.cache = cache;
+		this.cache = newCache;
 
 		return this;
 	}

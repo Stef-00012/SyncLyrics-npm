@@ -9,11 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SyncLyrics = void 0;
+exports.SyncLyrics = exports.logLevels = exports.lyricType = exports.sources = void 0;
 exports.normalize = normalize;
 const util_1 = require("util");
 const sleep = (0, util_1.promisify)(setTimeout);
-const logLevels = {
+exports.sources = ["musixmatch", "lrclib", "netease"];
+exports.lyricType = ["plain", "lineSynced", "wordSynced"];
+exports.logLevels = {
     debug: 4,
     error: 3,
     warn: 2,
@@ -23,8 +25,8 @@ const logLevels = {
 class SyncLyrics {
     constructor(data) {
         if (typeof (data === null || data === void 0 ? void 0 : data.logLevel) === "string" &&
-            !Object.keys(logLevels).includes(data.logLevel))
-            throw new Error(`SyncLyrics: logLevel must be one of "${Object.keys(logLevels).join('" | "')}"`);
+            !Object.keys(exports.logLevels).includes(data.logLevel))
+            throw new Error(`SyncLyrics: logLevel must be one of "${Object.keys(exports.logLevels).join('" | "')}"`);
         if ((data === null || data === void 0 ? void 0 : data.instrumentalLyricsIndicator) &&
             typeof data.instrumentalLyricsIndicator !== "string")
             throw new Error("SyncLyrics: instrumentalLyricsIndicator must be a string");
@@ -611,7 +613,7 @@ class SyncLyrics {
                 lrclib: this.fetchLyricsLrclib,
                 netease: this.fetchLyricsNetease,
             };
-            let sources = this.sources || ["musixmatch", "lrclib", "netease"];
+            let userSources = this.sources || ["musixmatch", "lrclib", "netease"];
             const lyricsData = {
                 plain: {
                     source: null,
@@ -629,9 +631,9 @@ class SyncLyrics {
             if (this._fetching)
                 return lyricsData;
             this._fetching = true;
-            if (sources.every((source) => !Object.keys(avaibleSources).includes(source)))
-                sources = ["musixmatch", "lrclib", "netease"];
-            sourcesLoop: for (const source of sources) {
+            if (userSources.every((source) => !Object.keys(avaibleSources).includes(source)))
+                userSources = ["musixmatch", "lrclib", "netease"];
+            sourcesLoop: for (const source of userSources) {
                 this.infoLog(`Trying to fetch the lyrics from the source "${source}"`);
                 if (source === "musixmatch" &&
                     (!this.saveMusixmatchToken || !this.getMusixmatchToken)) {
@@ -704,7 +706,7 @@ class SyncLyrics {
                     artist,
                     album,
                     lyricsType: lyricsFetchType,
-                });
+                }, skipCache);
             }
             const lyrics = cachedLyrics || (yield this._getLyrics(metadata, lyricsFetchType));
             if (!skipCache &&
@@ -803,46 +805,46 @@ class SyncLyrics {
             return metadata.trackId;
         return btoa(unescape(encodeURIComponent(`${metadata.track || ""}----${metadata.artist || ""}----${metadata.album || ""}`)));
     }
-    setLogLevel(logLevel) {
-        if (!logLevel) {
+    setLogLevel(newLogLevel) {
+        if (!newLogLevel) {
             this.logLevel = "none";
             return this;
         }
-        if (!Object.keys(logLevels).includes(logLevel))
-            throw new Error(`SyncLyrics: logLevel must be one of "${Object.keys(logLevels).join('" | "')}"`);
-        this.logLevel = logLevel;
+        if (!Object.keys(exports.logLevels).includes(newLogLevel))
+            throw new Error(`SyncLyrics: logLevel must be one of "${Object.keys(exports.logLevels).join('" | "')}"`);
+        this.logLevel = newLogLevel;
         return this;
     }
-    setInstrumentalLyricsIndicator(instrumentalLyricsIndicator) {
-        if (!instrumentalLyricsIndicator) {
+    setInstrumentalLyricsIndicator(newInstrumentalLyricsIndicator) {
+        if (!newInstrumentalLyricsIndicator) {
             this.instrumentalLyricsIndicator = "";
             return this;
         }
-        if (typeof instrumentalLyricsIndicator !== "string")
+        if (typeof newInstrumentalLyricsIndicator !== "string")
             throw new Error("SyncLyrics: instrumentalLyricsIndicator must be a string");
-        this.instrumentalLyricsIndicator = instrumentalLyricsIndicator;
+        this.instrumentalLyricsIndicator = newInstrumentalLyricsIndicator;
         return this;
     }
-    setSources(sources) {
-        if (!sources) {
+    setSources(newSources) {
+        if (!newSources) {
             this.sources = ["musixmatch", "lrclib", "netease"];
             return this;
         }
-        if (!Array.isArray(sources) || sources.length <= 0)
+        if (!Array.isArray(newSources) || newSources.length <= 0)
             throw new Error('SyncLyrics: sources must be an array with atleast one of "musixmatch" | "lrclib" | "netease"');
-        this.sources = sources;
+        this.sources = newSources;
         return this;
     }
-    setCache(cache) {
-        if (!cache) {
+    setCache(newCache) {
+        if (!newCache) {
             this.cache = new Map();
             return this;
         }
-        if (typeof cache.get !== "function" ||
-            typeof cache.set !== "function" ||
-            typeof cache.has !== "function")
+        if (typeof newCache.get !== "function" ||
+            typeof newCache.set !== "function" ||
+            typeof newCache.has !== "function")
             throw new Error("SyncLyrics: cache must have .get, .set and .has methods");
-        this.cache = cache;
+        this.cache = newCache;
         return this;
     }
     setSaveMusixmatchToken(saveMusixmatchToken) {
@@ -858,22 +860,22 @@ class SyncLyrics {
         return this;
     }
     warnLog(...args) {
-        if ((logLevels[this.logLevel] || 0) < logLevels.warn)
+        if ((exports.logLevels[this.logLevel] || 0) < exports.logLevels.warn)
             return;
         console.warn("\x1b[33;1mWARNING:\x1b[0m", ...args);
     }
     debugLog(...args) {
-        if ((logLevels[this.logLevel] || 0) < logLevels.debug)
+        if ((exports.logLevels[this.logLevel] || 0) < exports.logLevels.debug)
             return;
         console.debug("\x1b[35;1mDEBUG:\x1b[0m", ...args);
     }
     errorLog(...args) {
-        if ((logLevels[this.logLevel] || 0) < logLevels.debug)
+        if ((exports.logLevels[this.logLevel] || 0) < exports.logLevels.debug)
             return;
         console.debug("\x1b[35;1mDEBUG:\x1b[0m", ...args);
     }
     infoLog(...args) {
-        if ((logLevels[this.logLevel] || 0) < logLevels.info)
+        if ((exports.logLevels[this.logLevel] || 0) < exports.logLevels.info)
             return;
         console.info("\x1b[34;1mINFO:\x1b[0m", ...args);
     }

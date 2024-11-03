@@ -150,7 +150,7 @@ describe("Get track ID", () => {
 
 		assert.strictEqual(
 			trackId,
-			"cmlnaHQgcGVyc29uLCB3cm9uZyB0aW1lLUhlbnJ5IE1vb2RpZS1nb29kIG9sZCBkYXlz",
+			"cmlnaHQgcGVyc29uLCB3cm9uZyB0aW1lLS0tLUhlbnJ5IE1vb2RpZS0tLS1nb29kIG9sZCBkYXlz",
 		);
 	});
 
@@ -160,7 +160,7 @@ describe("Get track ID", () => {
 			artist: "Henry Moodie",
 		});
 
-		assert.strictEqual(trackId, "c3RpbGwgZGFuY2luZy1IZW5yeSBNb29kaWUt");
+		assert.strictEqual(trackId, "c3RpbGwgZGFuY2luZy0tLS1IZW5yeSBNb29kaWUtLS0t");
 	});
 
 	it("Not match (partially removed ID) [right person, wrong time]", ({
@@ -315,7 +315,7 @@ describe("Cache [custom method]", () => {
 		assert.strictEqual(data.cached, true);
 	});
 
-	it("Should not be cached [good old days]", async ({ assert }) => {
+	it("Should not be cached [good old days] - skip cache check", async ({ assert }) => {
 		const data = await LyricsManager.getLyrics(
 			{
 				track: "good old days",
@@ -365,7 +365,7 @@ describe("Cache with ID search", () => {
 		assert.strictEqual(data.cached, true);
 	});
 
-	it("Should not be cached [still dancing]", async ({ assert }) => {
+	it("Should not be cached [still dancing] - skip cache check", async ({ assert }) => {
 		const data = await LyricsManager.getLyrics(
 			{
 				trackId: "c3RpbGwgZGFuY2luZy1IZW5yeSBNb29kaWUt",

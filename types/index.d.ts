@@ -1,6 +1,15 @@
 export type Sources = Array<"musixmatch" | "lrclib" | "netease">;
 export type LogLevel = "none" | "info" | "warn" | "error" | "debug";
 export type LyricType = Array<"plain" | "lineSynced" | "wordSynced">;
+export declare const sources: Sources;
+export declare const lyricType: LyricType;
+export declare const logLevels: {
+    debug: number;
+    error: number;
+    warn: number;
+    info: number;
+    none: number;
+};
 export interface TokenData {
     cookies: string | undefined;
     usertoken: string;
@@ -134,10 +143,10 @@ export declare class SyncLyrics {
     getLyrics(metadata: Metadata, skipCache?: boolean): Promise<LyricsOutput>;
     parseLyrics(lyrics?: string | null | undefined): Array<FormattedLyric> | null;
     getTrackId(metadata: Metadata): string;
-    setLogLevel(logLevel?: LogLevel): this;
-    setInstrumentalLyricsIndicator(instrumentalLyricsIndicator?: string): this;
-    setSources(sources?: Sources): this;
-    setCache(cache?: Cache<string | null | undefined, CacheLyrics | null | undefined | null>): this;
+    setLogLevel(newLogLevel?: LogLevel): this;
+    setInstrumentalLyricsIndicator(newInstrumentalLyricsIndicator?: string): this;
+    setSources(newSources?: Sources): this;
+    setCache(newCache?: Cache<string | null | undefined, CacheLyrics | null | undefined | null>): this;
     setSaveMusixmatchToken(saveMusixmatchToken?: (tokenData: TokenData) => void | Promise<void>): this;
     setGetMusixmatchToken(getMusixmatchToken?: () => TokenData | Promise<TokenData>): this;
     private warnLog;
