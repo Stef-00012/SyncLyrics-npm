@@ -2,118 +2,118 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>https://synclyrics.js.org/modules.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/index.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/classes/SyncLyrics.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/Cache.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/CacheLineSyncedLyricsData.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/CacheLyrics.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/Data.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/FormattedLyric.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/LineSyncedLyricsData.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/LrcLibFetchResult.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/Lyrics.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/LyricsOutput.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/Metadata.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/MusixmatchFetchResult.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/MusixmatchLyricsFetchResult.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/MusixmatchSearchResult.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/NeteaseFetchResult.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/PlainLyricsData.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/TokenData.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/WordSyncedLyrics.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/WordSyncedLyricsData.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/interfaces/WordSyncedLyricsLine.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/types/LogLevel.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/types/LyricType.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/types/Sources.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/variables/logLevels.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/variables/lyricType-1.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/variables/sources-1.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 	<url>
 		<loc>https://synclyrics.js.org/functions/normalize.html</loc>
-		<lastmod>2024-11-18T14:58:34.589Z</lastmod>
+		<lastmod>2024-11-18T15:02:07.030Z</lastmod>
 	</url>
 </urlset>
