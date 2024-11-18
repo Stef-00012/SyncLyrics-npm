@@ -2,3 +2,5 @@ node_modules
 biome.json
 /reminder.txt
 release.js
+/dist
+/types
