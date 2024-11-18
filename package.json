@@ -1,6 +1,6 @@
 {
     "name": "@stef-0012/synclyrics",
-    "version": "2.5.2",
+    "version": "2.5.3",
     "description": "Get the plain, line synced & word synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
     "main": "dist/index.min.js",
     "types": "./types/index.d.ts",
@@ -57,8 +57,6 @@
         "typedoc-github-theme": "^0.1.2"
     },
     "dependencies": {
-        "fs": "^0.0.1-security",
-        "path": "^0.12.7",
         "util": "^0.12.5"
     }
 }
