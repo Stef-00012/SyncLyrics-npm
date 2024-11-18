@@ -1,6 +1,6 @@
 {
     "name": "@stef-0012/synclyrics",
-    "version": "2.5.4",
+    "version": "2.5.5",
     "description": "Get the plain, line synced & word synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
     "main": "dist/index.min.js",
     "types": "./types/index.d.ts",
