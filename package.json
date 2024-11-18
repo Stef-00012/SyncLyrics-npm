@@ -1,6 +1,6 @@
 {
     "name": "@stef-0012/synclyrics",
-    "version": "2.5.3",
+    "version": "2.5.4",
     "description": "Get the plain, line synced & word synced lyrics of any song avaible on Musixmatch, LrcLib.net or Netease",
     "main": "dist/index.min.js",
     "types": "./types/index.d.ts",
@@ -12,8 +12,8 @@
         "build": "npm run build:compile && npm run build:docs",
         "build:compile": "tsc && google-closure-compiler --js=dist/index.js --js_output_file=dist/index.min.js",
         "build:docs": "typedoc --options typedoc.json",
-        "test": "node tests/test.js",
-        "test2": "node tests/test2.js"
+        "test": "node __tests__/test.js",
+        "test2": "node __tests__/test2.js"
     },
     "type": "commonjs",
     "repository": {
