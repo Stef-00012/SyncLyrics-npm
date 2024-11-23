@@ -1668,9 +1668,6 @@ export class SyncLyrics {
 				});
 			}
 
-			// @ts-ignore
-			console.log(lastTime, totalSeconds, totalSeconds - lastTime)
-
 			if (text.length > 0) {
 				lastTime = totalSeconds;
 
