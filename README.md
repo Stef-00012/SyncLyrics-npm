@@ -4,6 +4,8 @@ SyncLyrics allows you to get the plain, line synced and word synced lyrics of an
 
 **Installation**: `npm i @stef-0012/synclyrics`.
 
+![NPM Version](https://img.shields.io/npm/v/%40stef-0012%2Fsynclyrics?style=flat&labelColor=%23CC3534)
+
 # Usage
 
 ```js

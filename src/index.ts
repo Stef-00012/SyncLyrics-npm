@@ -1643,7 +1643,7 @@ export class SyncLyrics {
 		if (!lyricsSplit) return null;
 
 		const formattedLyrics: Array<FormattedLyric> = [];
-		let lastTime: string;
+		let lastTime: number;
 
 		for (const index in lyricsSplit) {
 			const lyricText = lyricsSplit[index].split(" ");
@@ -1668,20 +1668,21 @@ export class SyncLyrics {
 				});
 			}
 
+			// @ts-ignore
+			console.log(lastTime, totalSeconds, totalSeconds - lastTime)
+
 			if (text.length > 0) {
-				lastTime = time;
+				lastTime = totalSeconds;
 
 				formattedLyrics.push({
 					time: totalSeconds,
 					text: text,
 				});
-
-				continue;
 			}
 
 			// @ts-ignore
-			if (instrumentalLyricIndicator && (!lastTime || lastTime - time > 3)) {
-				lastTime = time;
+			if (instrumentalLyricIndicator && (!lastTime || totalSeconds - lastTime > 3)) {
+				lastTime = totalSeconds;
 
 				formattedLyrics.push({
 					time: totalSeconds,
